@@ -47,8 +47,6 @@ export default function OrderModeBar({ emporterLinks, livraisonLinks, primaryCol
   const L = LABELS[locale] || LABELS.fr;
   const links = mode === 'emporter' ? emporterLinks : livraisonLinks;
 
-  if (emporterLinks.length === 0 && livraisonLinks.length === 0) return null;
-
   return (
     <div className="bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 py-2.5">

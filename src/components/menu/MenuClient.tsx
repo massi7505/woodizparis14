@@ -238,8 +238,8 @@ export default function MenuClient({ categories, promos, reviews, faqs, site, lo
         <MenuHeader site={site} locale={locale} search={search} onSearch={handleSearch} L={L} primaryColor={primaryColor} />
         <OrderModeBar emporterLinks={emporterLinks} livraisonLinks={livraisonLinks} primaryColor={primaryColor} locale={locale} />
       </div>
-      {/* Spacer = notif bar height + header height (+ order bar if visible) */}
-      <div style={{ height: spacerH + ((emporterLinks.length > 0 || livraisonLinks.length > 0) ? 46 : 0) }} />
+      {/* Spacer = notif bar height + header height + order bar */}
+      <div style={{ height: spacerH + 46 }} />
 
       <main id="main-content">
 
