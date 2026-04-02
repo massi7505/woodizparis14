@@ -2,6 +2,7 @@
  * Shared data-fetching and serialization helpers for menu pages.
  * Used by both /menu (FR only) and /[locale]/menu (all locales).
  */
+import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/db';
 
 // ── Serialization helpers ──────────────────────────────────────────────────
@@ -77,7 +78,7 @@ export function serializeSite(site: any) {
 // ── Data-fetching helpers ──────────────────────────────────────────────────
 
 /** Core menu data: categories, promos, reviews, FAQs, notif bar, site settings. */
-export async function fetchMenuCoreData(locale: string) {
+async function _fetchMenuCoreData(locale: string) {
   const [categoriesRes, promosRes, reviewsRes, faqsRes, notifRes, siteRes] = await Promise.allSettled([
     prisma.menuCategory.findMany({
       where: { isVisible: true },
@@ -117,8 +118,14 @@ export async function fetchMenuCoreData(locale: string) {
   };
 }
 
+export const fetchMenuCoreData = unstable_cache(
+  _fetchMenuCoreData,
+  ['menu-core'],
+  { revalidate: 30, tags: ['menu'] }
+);
+
 /** Secondary menu data: banners, opening hours, order links, footer settings — run after core. */
-export async function fetchMenuSecondaryData() {
+async function _fetchMenuSecondaryData() {
   const p = prisma as any;
   const [bannersRaw, openingHoursRaw, orderLinksRaw, emporterRaw, livraisonRaw, footerRaw] = await Promise.all([
     p.notificationBanner?.findMany?.({
@@ -153,8 +160,14 @@ export async function fetchMenuSecondaryData() {
   };
 }
 
+export const fetchMenuSecondaryData = unstable_cache(
+  _fetchMenuSecondaryData,
+  ['menu-secondary'],
+  { revalidate: 60, tags: ['menu'] }
+);
+
 /** Hero section data (heroSettings, slides, feature cards). */
-export async function fetchHeroData() {
+async function _fetchHeroData() {
   try {
     const p = prisma as any;
     const DEFAULT_SETTINGS = {
@@ -181,8 +194,14 @@ export async function fetchHeroData() {
   }
 }
 
+export const fetchHeroData = unstable_cache(
+  _fetchHeroData,
+  ['menu-hero'],
+  { revalidate: 120, tags: ['menu'] }
+);
+
 /** Popup/lead-capture settings. */
-export async function fetchPopupSettings() {
+async function _fetchPopupSettings() {
   try {
     const p = prisma as any;
     return await p.popupSettings?.findFirst?.({ where: { id: 1 } }).catch(() => null) ?? null;
@@ -190,3 +209,9 @@ export async function fetchPopupSettings() {
     return null;
   }
 }
+
+export const fetchPopupSettings = unstable_cache(
+  _fetchPopupSettings,
+  ['menu-popup'],
+  { revalidate: 120, tags: ['menu'] }
+);
