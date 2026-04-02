@@ -163,8 +163,8 @@ export default function MenuFooter({ site, locale, orderLinks = [], footerSettin
             </div>
           )}
 
-          {/* ── Column 2 (order links — merged with DB col2 + orderLinks prop) ── */}
-          {(col2.items.length > 0 || orderLinks.length > 0) && (
+          {/* ── Column 2 (liens personnalisés footer uniquement) ── */}
+          {col2.items.length > 0 && (
             <div>
               {col2.title && <h3 className="text-white font-bold text-sm mb-4">{col2.title}</h3>}
               <div className="space-y-2 text-xs text-gray-500">
@@ -174,15 +174,6 @@ export default function MenuFooter({ site, locale, orderLinks = [], footerSettin
                     {link.label}
                   </a>
                 ))}
-                {/* Append order links from linktree buttons if not already in col2 */}
-                {orderLinks
-                  .filter(ol => !col2.items.some(c => c.url === ol.url))
-                  .map(link => (
-                    <a key={link.url} href={ensureUrl(link.url)} target="_blank" rel="noopener noreferrer"
-                      className="block hover:text-white transition-colors">
-                      {link.label}
-                    </a>
-                  ))}
               </div>
             </div>
           )}
@@ -202,7 +193,7 @@ export default function MenuFooter({ site, locale, orderLinks = [], footerSettin
           )}
 
           {/* ── Subscribe ── */}
-          <div className={orderLinks.length === 0 ? 'col-span-1' : ''}>
+          <div>
             <h3 className="text-white font-bold text-sm mb-4">
               {parseCol(footerSettings?.col4Json, { title: L.subscribe, items: [] }).title || L.subscribe}
             </h3>
