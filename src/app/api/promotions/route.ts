@@ -92,6 +92,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(promo, { status: 201 });
   } catch (e) {
     console.error('[POST /api/promotions]', e);
-    return NextResponse.json({ error: e instanceof Error ? e.message : 'Failed to create promotion' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create promotion' }, { status: 500 });
   }
 }

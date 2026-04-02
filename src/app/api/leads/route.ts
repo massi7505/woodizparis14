@@ -13,7 +13,8 @@ export async function GET(req: NextRequest) {
     });
     return NextResponse.json(leads);
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    console.error('[leads GET]', e);
+    return NextResponse.json({ error: 'Failed to fetch leads' }, { status: 500 });
   }
 }
 
@@ -37,7 +38,8 @@ export async function POST(req: NextRequest) {
     revalidatePath('/admin/leads');
     return NextResponse.json(lead, { status: 201 });
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    console.error('[leads POST]', e);
+    return NextResponse.json({ error: 'Failed to save lead' }, { status: 500 });
   }
 }
 
@@ -49,12 +51,17 @@ export async function DELETE(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     if (id) {
-      await prisma.lead.delete({ where: { id: parseInt(id) } });
+      const numId = parseInt(id, 10);
+      if (isNaN(numId) || numId <= 0) {
+        return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+      }
+      await prisma.lead.delete({ where: { id: numId } });
     } else {
       await prisma.lead.deleteMany();
     }
     return NextResponse.json({ success: true });
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    console.error('[leads DELETE]', e);
+    return NextResponse.json({ error: 'Failed to delete lead(s)' }, { status: 500 });
   }
 }

@@ -5,10 +5,20 @@ import bcrypt from 'bcryptjs';
 
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 const RATE_LIMIT_MAX = 5;
+// Note: this Map is in-memory and per-lambda-instance (Vercel serverless).
+// It provides a best-effort rate-limit on login attempts within a single instance.
 const attempts = new Map<string, { count: number; resetAt: number }>();
 
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
+
+  // Periodically purge expired entries to prevent unbounded Map growth
+  if (attempts.size > 500) {
+    for (const [key, val] of attempts) {
+      if (now > val.resetAt) attempts.delete(key);
+    }
+  }
+
   const entry = attempts.get(ip);
   if (!entry || now > entry.resetAt) {
     attempts.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });

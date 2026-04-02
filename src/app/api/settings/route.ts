@@ -33,6 +33,6 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json(settings);
   } catch (error) {
     console.error('[PATCH /api/settings]', error);
-    return NextResponse.json({ error: 'Failed to update settings', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 });
   }
 }

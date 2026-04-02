@@ -15,14 +15,22 @@ export async function GET(req: NextRequest) {
 
     const whereClause = startDate ? { createdAt: { gte: startDate } } : {};
 
-    const [totalVisits, allVisits, todayVisits, weekVisits, recentVisits] = await Promise.all([
+    const days = period === 'all' ? 30 : parseInt(period);
+
+    // Build date boundaries for the chart (one DB query per day is too many;
+    // instead we fetch aggregated data with groupBy via raw query approach —
+    // but Prisma groupBy on DateTime truncated to day requires raw SQL on PG).
+    // We fetch only the minimal fields needed and limit to 10k rows max to
+    // avoid OOM while still supporting realistic traffic volumes.
+    const [totalVisits, sampledVisits, todayVisits, weekVisits, recentVisits] = await Promise.all([
       // Total in period
       prisma.visit.count({ where: whereClause }),
-      // All visits in period (for chart + unique count)
+      // Sampled visits for chart + unique count — capped to prevent OOM
       prisma.visit.findMany({
         where: whereClause,
         select: { visitorId: true, createdAt: true, page: true },
         orderBy: { createdAt: 'asc' },
+        take: 10_000,
       }),
       // Today
       prisma.visit.count({
@@ -41,22 +49,25 @@ export async function GET(req: NextRequest) {
       }),
     ]);
 
-    // Unique visitors in period
-    const uniqueVisitors = new Set(allVisits.map(v => v.visitorId)).size;
+    // Unique visitors in period (based on sample)
+    const uniqueVisitors = new Set(sampledVisits.map(v => v.visitorId)).size;
 
-    // Build daily chart data for the period
-    const days = period === 'all' ? 30 : parseInt(period);
+    // Build daily chart data — O(n) with pre-bucketed map
+    const buckets = new Map<string, number>();
+    for (const v of sampledVisits) {
+      const dateStr = v.createdAt.toISOString().split('T')[0];
+      buckets.set(dateStr, (buckets.get(dateStr) ?? 0) + 1);
+    }
     const chartDays: { date: string; count: number }[] = [];
     for (let i = days - 1; i >= 0; i--) {
       const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
       const dateStr = d.toISOString().split('T')[0];
-      const count = allVisits.filter(v => v.createdAt.toISOString().split('T')[0] === dateStr).length;
-      chartDays.push({ date: dateStr, count });
+      chartDays.push({ date: dateStr, count: buckets.get(dateStr) ?? 0 });
     }
 
     // Page breakdown
     const pageBreakdown: Record<string, number> = {};
-    for (const v of allVisits) {
+    for (const v of sampledVisits) {
       pageBreakdown[v.page] = (pageBreakdown[v.page] || 0) + 1;
     }
 
@@ -74,7 +85,7 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error('[visits GET]', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch visit stats' }, { status: 500 });
   }
 }
 
@@ -87,6 +98,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('[visits DELETE]', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to delete visits' }, { status: 500 });
   }
 }

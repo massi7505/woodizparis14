@@ -45,7 +45,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'Unknown type' }, { status: 400 });
   } catch (error) {
     console.error('[hero PATCH]', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update hero item' }, { status: 500 });
   }
 }
 
@@ -74,6 +74,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('[hero DELETE]', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to delete hero item' }, { status: 500 });
   }
 }

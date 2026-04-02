@@ -12,7 +12,7 @@ export async function GET() {
     });
     return NextResponse.json(page);
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to process story request' }, { status: 500 });
   }
 }
 
@@ -31,6 +31,6 @@ export async function PATCH(req: NextRequest) {
     revalidatePath('/', 'layout');
     return NextResponse.json(page);
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to process story request' }, { status: 500 });
   }
 }

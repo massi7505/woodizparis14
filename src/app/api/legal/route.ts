@@ -10,24 +10,32 @@ const DEFAULT_LEGAL = [
 ];
 
 export async function GET() {
-  const p = prisma as any;
-  // Ensure defaults exist
-  for (const d of DEFAULT_LEGAL) {
-    await p.legalPage.upsert({ where: { slug: d.slug }, update: {}, create: d });
+  try {
+    const p = prisma as any;
+    // Ensure defaults exist
+    for (const d of DEFAULT_LEGAL) {
+      await p.legalPage.upsert({ where: { slug: d.slug }, update: {}, create: d });
+    }
+    const pages = await p.legalPage.findMany({ orderBy: { id: 'asc' } });
+    return NextResponse.json(pages);
+  } catch {
+    return NextResponse.json({ error: 'Failed to fetch legal pages' }, { status: 500 });
   }
-  const pages = await p.legalPage.findMany({ orderBy: { id: 'asc' } });
-  return NextResponse.json(pages);
 }
 
 export async function PATCH(req: NextRequest) {
-  const session = await getSessionFromReq(req);
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const body = await req.json();
-  const { id: _id, createdAt: _ca, updatedAt: _ua, ...data } = body;
-  const p = prisma as any;
-  const page = await p.legalPage.update({
-    where: { slug: data.slug },
-    data: { ...data, updatedAt: new Date() },
-  });
-  return NextResponse.json(page);
+  try {
+    const session = await getSessionFromReq(req);
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const body = await req.json();
+    const { id: _id, createdAt: _ca, updatedAt: _ua, ...data } = body;
+    const p = prisma as any;
+    const page = await p.legalPage.update({
+      where: { slug: data.slug },
+      data: { ...data, updatedAt: new Date() },
+    });
+    return NextResponse.json(page);
+  } catch {
+    return NextResponse.json({ error: 'Failed to update legal page' }, { status: 500 });
+  }
 }

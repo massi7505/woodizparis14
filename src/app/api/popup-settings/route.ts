@@ -12,7 +12,8 @@ export async function GET() {
     }
     return NextResponse.json(settings);
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    console.error('[popup-settings GET]', e);
+    return NextResponse.json({ error: 'Failed to fetch popup settings' }, { status: 500 });
   }
 }
 
@@ -33,6 +34,7 @@ export async function PATCH(req: NextRequest) {
     revalidatePath('/', 'layout');
     return NextResponse.json(settings);
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    console.error('[popup-settings PATCH]', e);
+    return NextResponse.json({ error: 'Failed to update popup settings' }, { status: 500 });
   }
 }

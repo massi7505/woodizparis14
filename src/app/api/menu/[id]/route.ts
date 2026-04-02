@@ -6,21 +6,28 @@ import { getSessionFromReq } from '@/lib/auth';
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
+    const numId = parseInt(id, 10);
+    if (isNaN(numId) || numId <= 0) {
+      return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+    }
+
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type') || 'product';
 
     if (type === 'category') {
       const category = await prisma.menuCategory.findUnique({
-        where: { id: parseInt(id) },
+        where: { id: numId },
         include: { translations: true },
       });
+      if (!category) return NextResponse.json({ error: 'Not found' }, { status: 404 });
       return NextResponse.json(category);
     }
 
     const product = await prisma.menuItem.findUnique({
-      where: { id: parseInt(id) },
+      where: { id: numId },
       include: { translations: true, category: { include: { translations: true } } },
     });
+    if (!product) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json(product);
   } catch {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -33,6 +40,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { id } = await params;
+    const numId = parseInt(id, 10);
+    if (isNaN(numId) || numId <= 0) {
+      return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+    }
+
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type') || 'product';
     const body = await req.json();
@@ -49,7 +61,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       if (sortOrder !== undefined) categoryData.sortOrder = sortOrder;
 
       const category = await prisma.menuCategory.update({
-        where: { id: parseInt(id) },
+        where: { id: numId },
         data: {
           ...categoryData,
           updatedAt: new Date(),
@@ -82,7 +94,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (categoryId !== undefined) productData.categoryId = categoryId;
 
     const product = await prisma.menuItem.update({
-      where: { id: parseInt(id) },
+      where: { id: numId },
       data: {
         ...productData,
         updatedAt: new Date(),
@@ -109,13 +121,18 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { id } = await params;
+    const delId = parseInt(id, 10);
+    if (isNaN(delId) || delId <= 0) {
+      return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+    }
+
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type') || 'product';
 
     if (type === 'category') {
-      await prisma.menuCategory.delete({ where: { id: parseInt(id) } });
+      await prisma.menuCategory.delete({ where: { id: delId } });
     } else {
-      await prisma.menuItem.delete({ where: { id: parseInt(id) } });
+      await prisma.menuItem.delete({ where: { id: delId } });
     }
 
     revalidatePath('/', 'layout');

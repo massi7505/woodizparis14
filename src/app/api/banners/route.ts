@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
     revalidatePath('/', 'layout');
     return NextResponse.json(banner);
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    console.error('[banners POST]', e);
+    return NextResponse.json({ error: 'Failed to create banner' }, { status: 500 });
   }
 }

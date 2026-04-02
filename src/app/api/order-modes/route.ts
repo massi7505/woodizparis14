@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(buttons);
   } catch (error) {
     console.error('[order-modes GET]', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch order modes' }, { status: 500 });
   }
 }
 
@@ -60,6 +60,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(button, { status: 201 });
   } catch (error) {
     console.error('[order-modes POST]', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create order mode' }, { status: 500 });
   }
 }

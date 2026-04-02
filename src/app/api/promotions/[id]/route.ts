@@ -59,7 +59,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json(promo);
   } catch (e) {
     console.error('[PATCH /api/promotions/[id]]', e);
-    return NextResponse.json({ error: e instanceof Error ? e.message : 'Failed to update' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update promotion' }, { status: 500 });
   }
 }
 

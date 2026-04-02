@@ -173,7 +173,8 @@ export default function MenuClient({ categories, promos, reviews, faqs, site, lo
     ro.observe(el);
     setNotifBarH(el.offsetHeight);
     return () => ro.disconnect();
-  }, [notifBar]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // ref is stable; runs once after mount
 
   // ── Back to top visibility ─────────────────────────────────────────────────
   useEffect(() => {
@@ -197,11 +198,12 @@ export default function MenuClient({ categories, promos, reviews, faqs, site, lo
     setSelectedCategoryForModal(category);
   }, []);
 
+  const defaultCategoryId: number | null = site?.defaultCategoryId ?? categories[0]?.id ?? null;
   const handleSearch = useCallback((v: string) => {
     setSearch(v);
     // Reset active category when clearing search
-    if (!v) setActiveCategoryId(site?.defaultCategoryId || categories[0]?.id || null);
-  }, [categories, site]);
+    if (!v) setActiveCategoryId(defaultCategoryId);
+  }, [defaultCategoryId]);
 
   const headerTop = notifBarH;
   const spacerH = notifBarH + 60;

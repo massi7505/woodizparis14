@@ -21,6 +21,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ settings, slides, featureCards });
   } catch (error) {
     console.error('[hero admin GET]', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch hero admin data' }, { status: 500 });
   }
 }

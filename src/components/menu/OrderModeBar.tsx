@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface OrderLink {
   label: string;
@@ -87,7 +87,7 @@ function LinkButton({ link, size, onClick }: { link: OrderLink; size: 'sm' | 'lg
 function useModeDropdown(links: OrderLink[]) {
   const [open, setOpen] = useState(false);
 
-  function handleClick(e: React.MouseEvent) {
+  const handleClick = useCallback((e: React.MouseEvent) => {
     if (links.length === 0) return;
     if (links.length === 1) {
       // Navigate directly — don't open a dropdown
@@ -98,11 +98,11 @@ function useModeDropdown(links: OrderLink[]) {
     }
     e.stopPropagation();
     setOpen(prev => !prev);
-  }
+  }, [links]);
 
-  function closeAfterLink() {
+  const closeAfterLink = useCallback(() => {
     setTimeout(() => setOpen(false), 150);
-  }
+  }, []);
 
   return { open, setOpen, handleClick, closeAfterLink };
 }
@@ -122,10 +122,12 @@ export function OrderModeBarMobile({ emporterLinks, livraisonLinks, primaryColor
   // Close both dropdowns on outside click
   useEffect(() => {
     if (!livraison.open && !emporter.open) return;
+    const setLivraisonOpen = livraison.setOpen;
+    const setEmporterOpen = emporter.setOpen;
     function handleOutside(e: MouseEvent | TouchEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        livraison.setOpen(false);
-        emporter.setOpen(false);
+        setLivraisonOpen(false);
+        setEmporterOpen(false);
       }
     }
     document.addEventListener('mousedown', handleOutside);
@@ -134,7 +136,7 @@ export function OrderModeBarMobile({ emporterLinks, livraisonLinks, primaryColor
       document.removeEventListener('mousedown', handleOutside);
       document.removeEventListener('touchstart', handleOutside as any);
     };
-  }, [livraison, emporter]);
+  }, [livraison.open, emporter.open, livraison.setOpen, emporter.setOpen]);
 
   const cols = (links: OrderLink[]) => links.length <= 2 ? 2 : links.length <= 4 ? 2 : 3;
 
@@ -235,15 +237,17 @@ export function OrderModeBarDesktop({ emporterLinks, livraisonLinks, primaryColo
 
   useEffect(() => {
     if (!livraison.open && !emporter.open) return;
+    const setLivraisonOpen = livraison.setOpen;
+    const setEmporterOpen = emporter.setOpen;
     function handleOutside(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        livraison.setOpen(false);
-        emporter.setOpen(false);
+        setLivraisonOpen(false);
+        setEmporterOpen(false);
       }
     }
     document.addEventListener('mousedown', handleOutside);
     return () => document.removeEventListener('mousedown', handleOutside);
-  }, [livraison, emporter]);
+  }, [livraison.open, emporter.open, livraison.setOpen, emporter.setOpen]);
 
   return (
     <div ref={containerRef} className="relative flex items-center">

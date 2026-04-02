@@ -27,7 +27,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     revalidatePath('/', 'layout');
     return NextResponse.json(banner);
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    console.error('[banner PUT]', e);
+    return NextResponse.json({ error: 'Failed to update banner' }, { status: 500 });
   }
 }
 
@@ -42,6 +43,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     revalidatePath('/', 'layout');
     return NextResponse.json({ ok: true });
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    console.error('[banner DELETE]', e);
+    return NextResponse.json({ error: 'Failed to delete banner' }, { status: 500 });
   }
 }

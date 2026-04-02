@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ settings, buttons });
   } catch (error) {
     console.error('[linktree GET]', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch linktree data' }, { status: 500 });
   }
 }
 
@@ -63,6 +63,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(button, { status: 201 });
   } catch (error) {
     console.error('[linktree POST]', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to save linktree data' }, { status: 500 });
   }
 }

@@ -21,7 +21,7 @@ export async function GET() {
     return NextResponse.json({ settings, slides, featureCards });
   } catch (error) {
     console.error('[hero GET]', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch hero data' }, { status: 500 });
   }
 }
 
@@ -90,6 +90,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unknown type' }, { status: 400 });
   } catch (error) {
     console.error('[hero POST]', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to save hero data' }, { status: 500 });
   }
 }
