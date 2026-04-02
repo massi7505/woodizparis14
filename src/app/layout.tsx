@@ -187,7 +187,7 @@ async function getJsonLd() {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const nonce = (await headers()).get('x-nonce') ?? undefined;
   const jsonLd = await getJsonLd();
-  const settings = await getCachedSiteSettings();
+  const settings = await getCachedSiteSettings().catch(() => null);
   const faviconUrl = settings?.faviconUrl || null;
 
   return (
