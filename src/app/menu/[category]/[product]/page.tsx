@@ -84,8 +84,7 @@ export async function generateStaticParams() {
   try {
     const products = await prisma.menuItem.findMany({
       where: { isVisible: true },
-      include: { category: { select: { slug: true } } },
-      select: { slug: true, category: true },
+      select: { slug: true, category: { select: { slug: true } } },
     });
     return products.map(p => ({ category: p.category.slug, product: p.slug }));
   } catch {
