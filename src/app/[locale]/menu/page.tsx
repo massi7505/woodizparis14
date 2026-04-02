@@ -50,7 +50,7 @@ export default async function MenuPage({ params }: Props) {
   ]);
 
   const { categories, promos, reviews, faqs, notifBar, site } = core;
-  const { banners, openingHours, orderLinks, emporterLinks, livraisonLinks, footerSettings } = secondary;
+  const { banners, openingHours, orderLinks, emporterLinks, livraisonLinks, footerSettings, livraisonModeIconUrl, emporterModeIconUrl } = secondary;
 
   const enabledLocales: string[] = (() => {
     try { return JSON.parse(site?.enabledLocales || '["fr","en","it","es"]'); }
@@ -96,6 +96,8 @@ export default async function MenuPage({ params }: Props) {
         orderLinks={orderLinks}
         emporterLinks={emporterLinks}
         livraisonLinks={livraisonLinks}
+        livraisonModeIconUrl={livraisonModeIconUrl}
+        emporterModeIconUrl={emporterModeIconUrl}
         footerSettings={footerSettings}
         popupSettings={popupSettings}
       />

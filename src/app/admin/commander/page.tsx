@@ -84,6 +84,11 @@ export default function AdminCommanderPage() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
 
+  // Mode button icons
+  const [livraisonModeIconUrl, setLivraisonModeIconUrl] = useState<string | null>(null);
+  const [emporterModeIconUrl, setEmporterModeIconUrl] = useState<string | null>(null);
+  const [savingModeIcons, setSavingModeIcons] = useState(false);
+
   function showToast(msg: string) {
     setToast(msg);
     setTimeout(() => setToast(''), 2800);
@@ -93,12 +98,58 @@ export default function AdminCommanderPage() {
     const res = await fetch('/api/order-modes');
     if (!res.ok) return;
     const data = await res.json();
-    setButtons(Array.isArray(data) ? data : []);
+    const allButtons = Array.isArray(data) ? data : [];
+    setButtons(allButtons);
+    // Extract mode icons
+    const livraisonMode = allButtons.find((b: any) => b.section === 'mode-livraison');
+    const emporterMode  = allButtons.find((b: any) => b.section === 'mode-emporter');
+    setLivraisonModeIconUrl(livraisonMode?.iconUrl ?? null);
+    setEmporterModeIconUrl(emporterMode?.iconUrl ?? null);
+  }
+
+  async function saveModeIcon(section: 'mode-livraison' | 'mode-emporter', iconUrl: string | null) {
+    const all = await fetch('/api/order-modes').then(r => r.json()).catch(() => []);
+    const existing = (Array.isArray(all) ? all : []).find((b: any) => b.section === section);
+    if (existing) {
+      await fetch(`/api/order-modes/${existing.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ iconUrl }),
+      });
+    } else {
+      await fetch('/api/order-modes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          label: section === 'mode-livraison' ? 'Livraison' : 'À emporter',
+          url: '#',
+          iconUrl,
+          section,
+          isVisible: false,
+          sortOrder: 0,
+        }),
+      });
+    }
+  }
+
+  async function handleSaveModeIcons() {
+    setSavingModeIcons(true);
+    try {
+      await Promise.all([
+        saveModeIcon('mode-livraison', livraisonModeIconUrl),
+        saveModeIcon('mode-emporter', emporterModeIconUrl),
+      ]);
+      showToast('✅ Icônes de mode sauvegardées');
+      await load();
+    } catch {
+      showToast('❌ Erreur lors de la sauvegarde');
+    }
+    setSavingModeIcons(false);
   }
 
   useEffect(() => { load(); }, []);
 
-  const filtered = buttons.filter(b => b.section === tab);
+  const filtered = buttons.filter(b => b.section === tab && !b.section.startsWith('mode-'));
 
   function openNew() {
     setForm({ ...DEFAULT_FORM, section: tab });
@@ -206,6 +257,71 @@ export default function AdminCommanderPage() {
         >
           👁️ Aperçu menu
         </a>
+      </div>
+
+      {/* ── Mode button icons ── */}
+      <div className="rounded-2xl border border-gray-700 bg-gray-800/50 p-5 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-sm font-bold text-white">Icônes des boutons de mode</h2>
+            <p className="text-xs text-gray-500 mt-0.5">Personnalise l&apos;icône affichée sur les boutons Livraison et À emporter</p>
+          </div>
+          <button
+            onClick={handleSaveModeIcons}
+            disabled={savingModeIcons}
+            className="admin-btn-primary text-sm disabled:opacity-50"
+          >
+            {savingModeIcons ? 'Sauvegarde...' : 'Sauvegarder'}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          {/* Livraison icon */}
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-6 h-6 rounded-lg flex items-center justify-center text-sm"
+                style={{ background: 'linear-gradient(135deg, #F59E0B, #F59E0Bcc)' }}>
+                🛵
+              </div>
+              <p className="text-sm font-semibold text-white">Livraison</p>
+            </div>
+            <ImageUploader
+              label=""
+              value={livraisonModeIconUrl}
+              onChange={url => setLivraisonModeIconUrl(url || null)}
+              onRemove={() => setLivraisonModeIconUrl(null)}
+              folder="icons"
+              aspectRatio="aspect-square"
+              accept="image/svg+xml,image/png,image/gif,image/jpeg,image/webp"
+              objectFit="contain"
+              hint="SVG, PNG, GIF · max 5MB"
+            />
+            <p className="text-xs text-gray-500 mt-1 text-center">Remplace l&apos;emoji 🛵</p>
+          </div>
+
+          {/* À emporter icon */}
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-6 h-6 rounded-lg flex items-center justify-center text-sm"
+                style={{ background: 'linear-gradient(135deg, #EF4444, #EF4444cc)' }}>
+                🥡
+              </div>
+              <p className="text-sm font-semibold text-white">À emporter</p>
+            </div>
+            <ImageUploader
+              label=""
+              value={emporterModeIconUrl}
+              onChange={url => setEmporterModeIconUrl(url || null)}
+              onRemove={() => setEmporterModeIconUrl(null)}
+              folder="icons"
+              aspectRatio="aspect-square"
+              accept="image/svg+xml,image/png,image/gif,image/jpeg,image/webp"
+              objectFit="contain"
+              hint="SVG, PNG, GIF · max 5MB"
+            />
+            <p className="text-xs text-gray-500 mt-1 text-center">Remplace l&apos;emoji 🥡</p>
+          </div>
+        </div>
       </div>
 
       {/* Tabs */}

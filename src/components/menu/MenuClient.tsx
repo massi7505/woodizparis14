@@ -47,6 +47,8 @@ interface Props {
   orderLinks?: { label: string; url: string }[];
   emporterLinks?: { label: string; url: string; icon?: string | null }[];
   livraisonLinks?: { label: string; url: string; icon?: string | null }[];
+  livraisonModeIconUrl?: string | null;
+  emporterModeIconUrl?: string | null;
   footerSettings?: any;
   popupSettings?: any;
 }
@@ -71,7 +73,7 @@ function sortProducts(products: Product[]): Product[] {
   });
 }
 
-export default function MenuClient({ categories, promos, reviews, faqs, site, locale, heroData, notifBar, banners = [], openingHours = [], orderLinks = [], emporterLinks = [], livraisonLinks = [], footerSettings, popupSettings }: Props) {
+export default function MenuClient({ categories, promos, reviews, faqs, site, locale, heroData, notifBar, banners = [], openingHours = [], orderLinks = [], emporterLinks = [], livraisonLinks = [], livraisonModeIconUrl, emporterModeIconUrl, footerSettings, popupSettings }: Props) {
   const [search, setSearch] = useState('');
   const [activePromoCount, setActivePromoCount] = useState(promos.length);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(() => {
@@ -246,6 +248,8 @@ export default function MenuClient({ categories, promos, reviews, faqs, site, lo
           primaryColor={primaryColor}
           emporterLinks={emporterLinks}
           livraisonLinks={livraisonLinks}
+          livraisonModeIconUrl={livraisonModeIconUrl}
+          emporterModeIconUrl={emporterModeIconUrl}
         />
         {/* Mobile-only: order mode bar below header */}
         <div className="sm:hidden">
@@ -254,6 +258,8 @@ export default function MenuClient({ categories, promos, reviews, faqs, site, lo
             livraisonLinks={livraisonLinks}
             primaryColor={primaryColor}
             locale={locale}
+            livraisonModeIconUrl={livraisonModeIconUrl}
+            emporterModeIconUrl={emporterModeIconUrl}
           />
         </div>
       </div>

@@ -14,11 +14,13 @@ interface Props {
   primaryColor: string;
   emporterLinks?: any[];
   livraisonLinks?: any[];
+  livraisonModeIconUrl?: string | null;
+  emporterModeIconUrl?: string | null;
 }
 
 const ALL_LOCALES = ['fr', 'en', 'it', 'es'];
 
-export default function MenuHeader({ site, locale, search, onSearch, L, primaryColor, emporterLinks = [], livraisonLinks = [] }: Props) {
+export default function MenuHeader({ site, locale, search, onSearch, L, primaryColor, emporterLinks = [], livraisonLinks = [], livraisonModeIconUrl, emporterModeIconUrl }: Props) {
   const enabledLocales: string[] = (() => {
     try { return JSON.parse(site?.enabledLocales || '["fr","en","it","es"]'); } catch { return ALL_LOCALES; }
   })();
@@ -98,6 +100,8 @@ export default function MenuHeader({ site, locale, search, onSearch, L, primaryC
               livraisonLinks={livraisonLinks}
               primaryColor={primaryColor}
               locale={locale}
+              livraisonModeIconUrl={livraisonModeIconUrl}
+              emporterModeIconUrl={emporterModeIconUrl}
             />
           </div>
         )}

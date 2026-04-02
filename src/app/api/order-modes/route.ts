@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const buttons = await prisma.linktreeButton.findMany({
-      where: { section: { in: ['emporter', 'livraison'] } },
+      where: { section: { in: ['emporter', 'livraison', 'mode-livraison', 'mode-emporter'] } },
       orderBy: [{ section: 'asc' }, { sortOrder: 'asc' }],
     });
     return NextResponse.json(buttons);
@@ -35,13 +35,17 @@ export async function POST(req: NextRequest) {
     if (!trimmedUrl) {
       return NextResponse.json({ error: 'url is required' }, { status: 400 });
     }
-    try { new URL(trimmedUrl); } catch {
-      return NextResponse.json({ error: 'url must be a valid URL' }, { status: 400 });
-    }
-    const validSections = ['emporter', 'livraison'];
+    const validSections = ['emporter', 'livraison', 'mode-livraison', 'mode-emporter'];
     const trimmedSection = typeof section === 'string' ? section.trim() : '';
     if (trimmedSection && !validSections.includes(trimmedSection)) {
-      return NextResponse.json({ error: "section must be 'emporter' or 'livraison'" }, { status: 400 });
+      return NextResponse.json({ error: "section invalide" }, { status: 400 });
+    }
+    // mode-* entries: skip URL validation (url is '#' placeholder)
+    const isModeSection = trimmedSection.startsWith('mode-');
+    if (!isModeSection) {
+      try { new URL(trimmedUrl); } catch {
+        return NextResponse.json({ error: 'url must be a valid URL' }, { status: 400 });
+      }
     }
 
     const button = await prisma.linktreeButton.create({

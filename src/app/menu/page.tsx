@@ -46,7 +46,7 @@ export default async function MenuPageFR() {
   ]);
 
   const { categories, promos, reviews, faqs, notifBar, site } = core;
-  const { banners, openingHours, orderLinks, emporterLinks, livraisonLinks, footerSettings } = secondary;
+  const { banners, openingHours, orderLinks, emporterLinks, livraisonLinks, footerSettings, livraisonModeIconUrl, emporterModeIconUrl } = secondary;
 
   const faqSchemaItems = faqs
     .filter((f: any) => f.translations?.[0])
@@ -85,6 +85,8 @@ export default async function MenuPageFR() {
         orderLinks={orderLinks}
         emporterLinks={emporterLinks}
         livraisonLinks={livraisonLinks}
+        livraisonModeIconUrl={livraisonModeIconUrl}
+        emporterModeIconUrl={emporterModeIconUrl}
         footerSettings={footerSettings}
         popupSettings={popupSettings}
       />
