@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import MenuHeader from './MenuHeader';
+import OrderModeBar from './OrderModeBar';
 import PromoSlider from './PromoSlider';
 import CategoryTabs from './CategoryTabs';
 import ProductCard from './ProductCard';
@@ -44,6 +45,8 @@ interface Props {
   banners?: NotificationBannerData[];
   openingHours?: OpeningHoursData[];
   orderLinks?: { label: string; url: string }[];
+  emporterLinks?: { label: string; url: string; icon?: string | null }[];
+  livraisonLinks?: { label: string; url: string; icon?: string | null }[];
   footerSettings?: any;
   popupSettings?: any;
 }
@@ -68,7 +71,7 @@ function sortProducts(products: Product[]): Product[] {
   });
 }
 
-export default function MenuClient({ categories, promos, reviews, faqs, site, locale, heroData, notifBar, banners = [], openingHours = [], orderLinks = [], footerSettings, popupSettings }: Props) {
+export default function MenuClient({ categories, promos, reviews, faqs, site, locale, heroData, notifBar, banners = [], openingHours = [], orderLinks = [], emporterLinks = [], livraisonLinks = [], footerSettings, popupSettings }: Props) {
   const [search, setSearch] = useState('');
   const [activePromoCount, setActivePromoCount] = useState(promos.length);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(() => {
@@ -230,12 +233,13 @@ export default function MenuClient({ categories, promos, reviews, faqs, site, lo
         </div>
       )}
 
-      {/* ===== HEADER (fixed, below notification bar) ===== */}
+      {/* ===== HEADER + ORDER BAR (fixed, below notification bar) ===== */}
       <div style={{ position: 'fixed', top: headerTop, left: 0, right: 0, zIndex: 40 }}>
         <MenuHeader site={site} locale={locale} search={search} onSearch={handleSearch} L={L} primaryColor={primaryColor} />
+        <OrderModeBar emporterLinks={emporterLinks} livraisonLinks={livraisonLinks} primaryColor={primaryColor} locale={locale} />
       </div>
-      {/* Spacer = notif bar height + header height */}
-      <div style={{ height: spacerH }} />
+      {/* Spacer = notif bar height + header height (+ order bar if visible) */}
+      <div style={{ height: spacerH + ((emporterLinks.length > 0 || livraisonLinks.length > 0) ? 46 : 0) }} />
 
       <main id="main-content">
 

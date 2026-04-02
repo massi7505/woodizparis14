@@ -120,7 +120,7 @@ export async function fetchMenuCoreData(locale: string) {
 /** Secondary menu data: banners, opening hours, order links, footer settings — run after core. */
 export async function fetchMenuSecondaryData() {
   const p = prisma as any;
-  const [bannersRaw, openingHoursRaw, orderLinksRaw, footerRaw] = await Promise.all([
+  const [bannersRaw, openingHoursRaw, orderLinksRaw, emporterRaw, livraisonRaw, footerRaw] = await Promise.all([
     p.notificationBanner?.findMany?.({
       where: { isVisible: true },
       orderBy: [{ priority: 'desc' }, { sortOrder: 'asc' }],
@@ -130,8 +130,16 @@ export async function fetchMenuSecondaryData() {
     prisma.linktreeButton
       .findMany({ where: { isVisible: true, section: { in: ['commander', 'contact'] } }, orderBy: { sortOrder: 'asc' } })
       .catch(() => []),
+    prisma.linktreeButton
+      .findMany({ where: { isVisible: true, section: 'emporter' }, orderBy: { sortOrder: 'asc' } })
+      .catch(() => []),
+    prisma.linktreeButton
+      .findMany({ where: { isVisible: true, section: 'livraison' }, orderBy: { sortOrder: 'asc' } })
+      .catch(() => []),
     p.footerSettings?.findFirst?.().catch(() => null) ?? null,
   ]);
+
+  const toLink = (b: any) => ({ label: b.label, url: b.url, icon: b.icon ?? null });
 
   return {
     banners: (bannersRaw ?? []) as any[],
@@ -139,6 +147,8 @@ export async function fetchMenuSecondaryData() {
     orderLinks: ((orderLinksRaw ?? []) as any[])
       .filter((b: any) => b.url && !b.url.startsWith('/') && !b.url.startsWith('tel:') && !b.url.startsWith('mailto:'))
       .map((b: any) => ({ label: b.label, url: b.url })),
+    emporterLinks: ((emporterRaw ?? []) as any[]).map(toLink),
+    livraisonLinks: ((livraisonRaw ?? []) as any[]).map(toLink),
     footerSettings: footerRaw ?? null,
   };
 }

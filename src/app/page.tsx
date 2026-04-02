@@ -55,7 +55,7 @@ export default async function RootPage() {
   ]);
 
   const { categories, promos, reviews, faqs, notifBar, site } = core;
-  const { banners, openingHours, orderLinks } = secondary;
+  const { banners, openingHours, orderLinks, emporterLinks, livraisonLinks } = secondary;
 
   const faqSchemaItems = faqs
     .filter((f: any) => f.translations?.[0])
@@ -92,6 +92,8 @@ export default async function RootPage() {
         banners={banners}
         openingHours={openingHours}
         orderLinks={orderLinks}
+        emporterLinks={emporterLinks}
+        livraisonLinks={livraisonLinks}
         popupSettings={popupSettings}
       />
     </div>

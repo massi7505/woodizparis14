@@ -345,6 +345,8 @@ export default function AdminLinktreePage() {
                   <option value="main">🔗 Principal (main)</option>
                   <option value="commander">🛒 Commander</option>
                   <option value="contact">📞 Nous contacter</option>
+                  <option value="emporter">🥡 Menu — À emporter</option>
+                  <option value="livraison">🛵 Menu — En livraison</option>
                   <option value="discover">✨ Découvrir</option>
                   <option value="social">📱 Réseaux sociaux</option>
                   <option value="info">ℹ️ Informations</option>
