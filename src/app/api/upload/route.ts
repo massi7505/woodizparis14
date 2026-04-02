@@ -3,9 +3,8 @@ import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import { getSessionFromReq } from '@/lib/auth';
 
 const ALLOWED_TYPES = [
-  'image/jpeg', 'image/png', 'image/webp', 'image/gif',
-  'image/x-icon', 'image/vnd.microsoft.icon',
-  'video/mp4', 'video/webm',
+  'image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif',
+  'image/x-icon', 'image/vnd.microsoft.icon', 'image/svg+xml',
 ];
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -28,7 +27,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       request,
       onBeforeGenerateToken: async () => ({
         allowedContentTypes: ALLOWED_TYPES,
-        maximumSizeInBytes: 100 * 1024 * 1024, // 100 MB
+        maximumSizeInBytes: 5 * 1024 * 1024, // 5 MB
         addRandomSuffix: true,
       }),
       onUploadCompleted: async ({ blob }) => {

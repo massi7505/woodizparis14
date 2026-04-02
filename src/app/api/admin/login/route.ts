@@ -3,7 +3,31 @@ import { prisma } from '@/lib/db';
 import { signToken } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const RATE_LIMIT_MAX = 5;
+const attempts = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = attempts.get(ip);
+  if (!entry || now > entry.resetAt) {
+    attempts.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+  entry.count += 1;
+  return entry.count > RATE_LIMIT_MAX;
+}
+
 export async function POST(req: NextRequest) {
+  const ip =
+    req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+    req.headers.get('x-real-ip') ||
+    'unknown';
+
+  if (isRateLimited(ip)) {
+    return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 });
+  }
+
   try {
     const { email, password } = await req.json();
 

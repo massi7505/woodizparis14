@@ -246,20 +246,18 @@ export default function MenuClient({ categories, promos, reviews, faqs, site, lo
           livraisonLinks={livraisonLinks}
         />
         {/* Mobile-only: order mode bar below header */}
-        {(emporterLinks.length > 0 || livraisonLinks.length > 0) && (
-          <div className="sm:hidden">
-            <OrderModeBarMobile
-              emporterLinks={emporterLinks}
-              livraisonLinks={livraisonLinks}
-              primaryColor={primaryColor}
-              locale={locale}
-            />
-          </div>
-        )}
+        <div className="sm:hidden">
+          <OrderModeBarMobile
+            emporterLinks={emporterLinks}
+            livraisonLinks={livraisonLinks}
+            primaryColor={primaryColor}
+            locale={locale}
+          />
+        </div>
       </div>
-      {/* Spacer: desktop = spacerH (no order bar), mobile = spacerH + 46 (order bar mobile height) */}
+      {/* Spacer: desktop = spacerH, mobile = spacerH + 82 (headline + two mode buttons, links are a dropdown overlay) */}
       <div style={{ height: spacerH }} className="hidden sm:block" />
-      <div style={{ height: spacerH + 46 }} className="sm:hidden" />
+      <div style={{ height: spacerH + 82 }} className="sm:hidden" />
 
       <main id="main-content">
 

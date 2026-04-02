@@ -35,13 +35,10 @@ function buildCSP(nonce: string): string {
     "worker-src 'self' blob:",
     "object-src 'none'",
     "frame-ancestors 'none'",
+    "frame-src https://www.google.com https://maps.google.com https://www.youtube.com",
     "base-uri 'self'",
     "form-action 'self' https:",
     "upgrade-insecure-requests",
-    // Trusted Types: mitigates DOM-based XSS.
-    // nextjs#bundler is Next.js's own internal policy for dynamic script loading.
-    "require-trusted-types-for 'script'",
-    "trusted-types nextjs#bundler 'allow-duplicates'",
   ].join('; ');
 }
 

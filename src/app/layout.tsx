@@ -208,7 +208,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {jsonLd && (
           <script
             type="application/ld+json"
-            nonce={nonce}
             dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
           />
         )}

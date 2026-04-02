@@ -27,14 +27,31 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { label, url, iconUrl, bgColor, textColor, section, isVisible, sortOrder } = body;
 
+    const trimmedLabel = typeof label === 'string' ? label.trim() : '';
+    if (!trimmedLabel) {
+      return NextResponse.json({ error: 'label is required' }, { status: 400 });
+    }
+    const trimmedUrl = typeof url === 'string' ? url.trim() : '';
+    if (!trimmedUrl) {
+      return NextResponse.json({ error: 'url is required' }, { status: 400 });
+    }
+    try { new URL(trimmedUrl); } catch {
+      return NextResponse.json({ error: 'url must be a valid URL' }, { status: 400 });
+    }
+    const validSections = ['emporter', 'livraison'];
+    const trimmedSection = typeof section === 'string' ? section.trim() : '';
+    if (trimmedSection && !validSections.includes(trimmedSection)) {
+      return NextResponse.json({ error: "section must be 'emporter' or 'livraison'" }, { status: 400 });
+    }
+
     const button = await prisma.linktreeButton.create({
       data: {
-        label: label ?? '',
-        url: url ?? '',
+        label: trimmedLabel,
+        url: trimmedUrl,
         iconUrl: iconUrl ?? null,
         bgColor: bgColor ?? '#111827',
         textColor: textColor ?? '#ffffff',
-        section: section ?? 'emporter',
+        section: trimmedSection || 'emporter',
         isVisible: isVisible ?? true,
         sortOrder: sortOrder ?? 0,
       },

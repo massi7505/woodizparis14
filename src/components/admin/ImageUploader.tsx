@@ -13,12 +13,19 @@ interface Props {
   label?: string;
   aspectRatio?: string;
   accept?: string;
+  objectFit?: 'cover' | 'contain';
+  hint?: string;
+}
+
+function isSvg(url: string) {
+  return url.toLowerCase().includes('.svg') || url.toLowerCase().startsWith('data:image/svg');
 }
 
 export default function ImageUploader({
   value, onChange, onRemove,
   folder = 'uploads', label = 'Image',
   aspectRatio = 'aspect-video', accept = 'image/*',
+  objectFit = 'cover', hint,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -59,7 +66,12 @@ export default function ImageUploader({
       >
         {value ? (
           <>
-            <Image src={value} alt="Preview" fill className="object-cover" unoptimized />
+            {isSvg(value) ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={value} alt="Preview" className={`absolute inset-0 w-full h-full ${objectFit === 'contain' ? 'object-contain p-2' : 'object-cover'}`} />
+            ) : (
+              <Image src={value} alt="Preview" fill className={objectFit === 'contain' ? 'object-contain p-2' : 'object-cover'} unoptimized />
+            )}
             {error ? (
               <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center gap-2 p-3">
                 <p className="text-xs font-semibold text-red-400 text-center leading-snug">⚠️ {error}</p>
@@ -105,7 +117,7 @@ export default function ImageUploader({
               <>
                 <UploadIcon className="w-10 h-10 mb-2" />
                 <p className="text-sm font-semibold">Glisser-déposer ou cliquer</p>
-                <p className="text-xs mt-0.5 opacity-60">JPG, PNG, WebP, GIF · max 20MB</p>
+                <p className="text-xs mt-0.5 opacity-60">{hint || 'JPG, PNG, WebP, GIF, SVG · max 5MB'}</p>
               </>
             )}
           </div>

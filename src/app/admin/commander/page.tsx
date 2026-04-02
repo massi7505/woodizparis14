@@ -14,6 +14,68 @@ const DEFAULT_FORM = {
   isVisible: true,
 };
 
+function platformStyle(label: string, url: string) {
+  const key = (label + url).toLowerCase();
+  if (key.includes('ubereats') || (key.includes('uber') && key.includes('eat'))) return { emoji: '🖤', bg: '#000000', text: '#ffffff' };
+  if (key.includes('deliveroo')) return { emoji: '🛵', bg: '#00CCBC', text: '#ffffff' };
+  if (key.includes('delicity')) return { emoji: '📱', bg: '#6366F1', text: '#ffffff' };
+  if (key.includes('tel:') || key.includes('téléphone') || key.includes('telephone')) return { emoji: '📞', bg: '#22C55E', text: '#ffffff' };
+  if (key.includes('glovo')) return { emoji: '🟡', bg: '#FFC244', text: '#111827' };
+  return { emoji: '🔗', bg: '#374151', text: '#ffffff' };
+}
+
+/** Preview of a button as it will appear on the menu */
+function ButtonPreview({ form }: { form: typeof DEFAULT_FORM & { id?: number } }) {
+  const ps = platformStyle(form.label, form.url);
+  const bg = form.bgColor || ps.bg;
+  const text = form.textColor || ps.text;
+
+  return (
+    <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+      <p className="text-xs font-medium text-gray-400 mb-3">Aperçu du bouton</p>
+      <div className="flex flex-col items-center gap-3">
+        {/* Large (mobile) */}
+        <div>
+          <p className="text-[10px] text-gray-500 text-center mb-1.5">Mobile</p>
+          <div
+            className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl w-24"
+            style={{ backgroundColor: bg, color: text }}
+          >
+            {form.iconUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={form.iconUrl} alt="" className="w-8 h-8 object-contain rounded" />
+            ) : (
+              <span className="text-2xl leading-none">{ps.emoji}</span>
+            )}
+            <span className="text-xs font-semibold text-center leading-tight">
+              {form.label || 'Label'}
+            </span>
+          </div>
+        </div>
+
+        <div className="w-px h-8 bg-gray-600" />
+
+        {/* Small (desktop) */}
+        <div>
+          <p className="text-[10px] text-gray-500 text-center mb-1.5">Desktop</p>
+          <div
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+            style={{ backgroundColor: bg, color: text, height: '28px' }}
+          >
+            {form.iconUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={form.iconUrl} alt="" className="w-4 h-4 object-contain rounded-sm flex-shrink-0" />
+            ) : (
+              <span className="text-sm leading-none">{ps.emoji}</span>
+            )}
+            {form.label || 'Label'}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminCommanderPage() {
   const [buttons, setButtons] = useState<any[]>([]);
   const [tab, setTab] = useState<'emporter' | 'livraison'>('emporter');
@@ -92,7 +154,11 @@ export default function AdminCommanderPage() {
 
   async function handleDelete(id: number, label: string) {
     if (!confirm(`Supprimer "${label}" ?`)) return;
-    await fetch(`/api/order-modes/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/order-modes/${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      showToast(`❌ Erreur suppression (${res.status})`);
+      return;
+    }
     showToast('🗑️ Bouton supprimé');
     await load();
   }
@@ -111,6 +177,15 @@ export default function AdminCommanderPage() {
         })
       )
     );
+    await load();
+  }
+
+  async function toggleVisible(btn: any) {
+    await fetch(`/api/order-modes/${btn.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isVisible: !btn.isVisible }),
+    });
     await load();
   }
 
@@ -163,70 +238,81 @@ export default function AdminCommanderPage() {
             Aucun lien pour cette section. Ajoutez des plateformes de commande.
           </div>
         )}
-        {filtered.map((btn, i) => (
-          <div
-            key={btn.id}
-            className={`flex items-center gap-3 p-4 rounded-xl border transition-all ${btn.isVisible ? 'border-gray-700 bg-gray-800' : 'border-gray-800 bg-gray-900 opacity-60'}`}
-          >
-            {/* Sort arrows */}
-            <div className="flex flex-col gap-0.5">
-              <button onClick={() => move(i, -1)} className="text-gray-600 hover:text-gray-300 p-0.5" title="Monter">
-                <ChevronSortUpIcon />
-              </button>
-              <button onClick={() => move(i, 1)} className="text-gray-600 hover:text-gray-300 p-0.5" title="Descendre">
-                <ChevronSortDownIcon />
-              </button>
-            </div>
-
-            {/* Icon preview */}
+        {filtered.map((btn, i) => {
+          const ps = platformStyle(btn.label, btn.url);
+          const bg = btn.bgColor || ps.bg;
+          const text = btn.textColor || ps.text;
+          return (
             <div
-              className="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden"
-              style={{ backgroundColor: btn.bgColor || '#111827' }}
+              key={btn.id}
+              className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${btn.isVisible ? 'border-gray-700 bg-gray-800' : 'border-gray-800 bg-gray-900 opacity-60'}`}
             >
-              {btn.iconUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={btn.iconUrl} alt="" className="w-full h-full object-contain" />
-              ) : (
-                <span className="text-lg">{btn.section === 'livraison' ? '🛵' : '🥡'}</span>
-              )}
-            </div>
+              {/* Sort arrows */}
+              <div className="flex flex-col gap-0.5">
+                <button onClick={() => move(i, -1)} className="text-gray-600 hover:text-gray-300 p-0.5" title="Monter">
+                  <ChevronSortUpIcon />
+                </button>
+                <button onClick={() => move(i, 1)} className="text-gray-600 hover:text-gray-300 p-0.5" title="Descendre">
+                  <ChevronSortDownIcon />
+                </button>
+              </div>
 
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate">{btn.label || '—'}</p>
-              <p className="text-xs text-gray-500 truncate">{btn.url}</p>
-            </div>
-
-            {/* Visibility badge */}
-            <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${btn.isVisible ? 'bg-green-500/15 text-green-400' : 'bg-gray-700 text-gray-500'}`}>
-              {btn.isVisible ? 'Visible' : 'Masqué'}
-            </span>
-
-            {/* Actions */}
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => openEdit(btn)}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 transition-colors"
-                title="Modifier"
+              {/* Button preview */}
+              <div
+                className="w-10 h-10 rounded-xl flex-shrink-0 flex flex-col items-center justify-center gap-0.5 overflow-hidden"
+                style={{ backgroundColor: bg, color: text }}
               >
-                <EditIcon />
-              </button>
+                {btn.iconUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={btn.iconUrl} alt="" className="w-7 h-7 object-contain" />
+                ) : (
+                  <span className="text-xl">{ps.emoji}</span>
+                )}
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold truncate" style={{ color: text, backgroundColor: bg, display: 'inline', padding: '1px 6px', borderRadius: '4px' }}>
+                  {btn.label || '—'}
+                </p>
+                <p className="text-xs text-gray-500 truncate mt-0.5">{btn.url}</p>
+              </div>
+
+              {/* Visibility toggle */}
               <button
-                onClick={() => handleDelete(btn.id, btn.label)}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                title="Supprimer"
+                onClick={() => toggleVisible(btn)}
+                title={btn.isVisible ? 'Masquer' : 'Afficher'}
+                className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 transition-colors ${btn.isVisible ? 'bg-green-500/15 text-green-400 hover:bg-red-500/15 hover:text-red-400' : 'bg-gray-700 text-gray-500 hover:bg-green-500/15 hover:text-green-400'}`}
               >
-                <TrashIcon />
+                {btn.isVisible ? 'Visible' : 'Masqué'}
               </button>
+
+              {/* Actions */}
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => openEdit(btn)}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 transition-colors"
+                  title="Modifier"
+                >
+                  <EditIcon />
+                </button>
+                <button
+                  onClick={() => handleDelete(btn.id, btn.label)}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                  title="Supprimer"
+                >
+                  <TrashIcon />
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Modal */}
       {modal && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-gray-900 rounded-2xl border border-gray-700 w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="bg-gray-900 rounded-2xl border border-gray-700 w-full max-w-lg max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b border-gray-700">
               <h2 className="font-bold text-white">
                 {modal === 'new' ? '+ Nouveau lien' : '✏️ Modifier le lien'}
@@ -237,6 +323,9 @@ export default function AdminCommanderPage() {
             </div>
 
             <div className="p-5 space-y-4">
+              {/* Live preview */}
+              <ButtonPreview form={form} />
+
               {/* Label */}
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-1.5">Label *</label>
@@ -245,7 +334,7 @@ export default function AdminCommanderPage() {
                   value={form.label}
                   onChange={e => setForm(f => ({ ...f, label: e.target.value }))}
                   className="admin-input"
-                  placeholder="ex: Uber Eats, Deliveroo..."
+                  placeholder="ex: Uber Eats, Deliveroo, Commander par tél..."
                 />
               </div>
 
@@ -257,16 +346,35 @@ export default function AdminCommanderPage() {
                   value={form.url}
                   onChange={e => setForm(f => ({ ...f, url: e.target.value }))}
                   className="admin-input"
-                  placeholder="https://..."
+                  placeholder="https://... ou tel:+33..."
                 />
+                <p className="text-xs text-gray-500 mt-1">Accepte aussi les liens téléphone : <code className="text-amber-400">tel:+33123456789</code></p>
               </div>
 
               {/* Icon */}
-              <ImageUploader
-                label="Icône (logo de la plateforme)"
-                value={form.iconUrl}
-                onChange={url => setForm(f => ({ ...f, iconUrl: url }))}
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1.5">Icône (logo de la plateforme)</label>
+                <div className="flex gap-3 items-start">
+                  <div className="w-24 flex-shrink-0">
+                    <ImageUploader
+                      label=""
+                      value={form.iconUrl}
+                      onChange={url => setForm(f => ({ ...f, iconUrl: url || null }))}
+                      onRemove={() => setForm(f => ({ ...f, iconUrl: null }))}
+                      folder="icons"
+                      aspectRatio="aspect-square"
+                      accept="image/svg+xml,image/png,image/gif,image/jpeg,image/webp"
+                      objectFit="contain"
+                      hint="SVG, PNG, GIF · max 5MB"
+                    />
+                  </div>
+                  <div className="flex-1 text-xs text-gray-500 pt-2 space-y-1">
+                    <p>Formats acceptés :</p>
+                    <p className="text-amber-400 font-medium">SVG · PNG · GIF · JPG</p>
+                    <p>Si pas d&apos;icône, un emoji sera utilisé automatiquement selon la plateforme.</p>
+                  </div>
+                </div>
+              </div>
 
               {/* Colors */}
               <div className="grid grid-cols-2 gap-3">
@@ -305,6 +413,31 @@ export default function AdminCommanderPage() {
                       placeholder="#ffffff"
                     />
                   </div>
+                </div>
+              </div>
+
+              {/* Quick color presets */}
+              <div>
+                <p className="text-xs text-gray-500 mb-2">Presets plateformes</p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { name: 'Uber Eats', bg: '#000000', text: '#ffffff' },
+                    { name: 'Deliveroo', bg: '#00CCBC', text: '#ffffff' },
+                    { name: 'Delicity', bg: '#6366F1', text: '#ffffff' },
+                    { name: 'Glovo', bg: '#FFC244', text: '#111827' },
+                    { name: 'Téléphone', bg: '#22C55E', text: '#ffffff' },
+                    { name: 'Custom', bg: '#374151', text: '#ffffff' },
+                  ].map(p => (
+                    <button
+                      key={p.name}
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, bgColor: p.bg, textColor: p.text }))}
+                      className="px-2 py-1 rounded-lg text-xs font-semibold border border-gray-600 hover:border-gray-400 transition-colors"
+                      style={{ backgroundColor: p.bg, color: p.text }}
+                    >
+                      {p.name}
+                    </button>
+                  ))}
                 </div>
               </div>
 

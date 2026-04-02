@@ -39,6 +39,7 @@ const nextConfig: NextConfig = {
         ? process.env.ALLOWED_ORIGINS.split(',')
         : ['localhost:3000', '*.vercel.app'],
     },
+    optimizePackageImports: ['lucide-react'],
   },
   async headers() {
     return [

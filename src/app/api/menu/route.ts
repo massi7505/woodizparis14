@@ -47,6 +47,12 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { type, translations, ...data } = body;
 
+    // Sanitize slug: only allow lowercase alphanumeric and hyphens
+    if (data.slug !== undefined) {
+      data.slug = String(data.slug).toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+      if (!data.slug) return NextResponse.json({ error: 'Invalid slug' }, { status: 400 });
+    }
+
     if (type === 'category') {
       const category = await prisma.menuCategory.create({
         data: {
