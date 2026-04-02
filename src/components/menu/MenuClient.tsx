@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import MenuHeader from './MenuHeader';
-import OrderModeBar from './OrderModeBar';
+import { OrderModeBarMobile } from './OrderModeBar';
 import PromoSlider from './PromoSlider';
 import CategoryTabs from './CategoryTabs';
 import ProductCard from './ProductCard';
@@ -233,13 +233,33 @@ export default function MenuClient({ categories, promos, reviews, faqs, site, lo
         </div>
       )}
 
-      {/* ===== HEADER + ORDER BAR (fixed, below notification bar) ===== */}
+      {/* ===== HEADER + ORDER BAR MOBILE (fixed, below notification bar) ===== */}
       <div style={{ position: 'fixed', top: headerTop, left: 0, right: 0, zIndex: 40 }}>
-        <MenuHeader site={site} locale={locale} search={search} onSearch={handleSearch} L={L} primaryColor={primaryColor} />
-        <OrderModeBar emporterLinks={emporterLinks} livraisonLinks={livraisonLinks} primaryColor={primaryColor} locale={locale} />
+        <MenuHeader
+          site={site}
+          locale={locale}
+          search={search}
+          onSearch={handleSearch}
+          L={L}
+          primaryColor={primaryColor}
+          emporterLinks={emporterLinks}
+          livraisonLinks={livraisonLinks}
+        />
+        {/* Mobile-only: order mode bar below header */}
+        {(emporterLinks.length > 0 || livraisonLinks.length > 0) && (
+          <div className="sm:hidden">
+            <OrderModeBarMobile
+              emporterLinks={emporterLinks}
+              livraisonLinks={livraisonLinks}
+              primaryColor={primaryColor}
+              locale={locale}
+            />
+          </div>
+        )}
       </div>
-      {/* Spacer = notif bar height + header height + order bar */}
-      <div style={{ height: spacerH + 46 }} />
+      {/* Spacer: desktop = spacerH (no order bar), mobile = spacerH + 46 (order bar mobile height) */}
+      <div style={{ height: spacerH }} className="hidden sm:block" />
+      <div style={{ height: spacerH + 46 }} className="sm:hidden" />
 
       <main id="main-content">
 

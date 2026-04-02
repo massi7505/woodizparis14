@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { SearchIcon, CloseIcon } from '@/components/ui/icons';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
+import { OrderModeBarDesktop } from '@/components/menu/OrderModeBar';
 
 interface Props {
   site: any;
@@ -11,11 +12,13 @@ interface Props {
   onSearch: (v: string) => void;
   L: Record<string, string>;
   primaryColor: string;
+  emporterLinks?: any[];
+  livraisonLinks?: any[];
 }
 
 const ALL_LOCALES = ['fr', 'en', 'it', 'es'];
 
-export default function MenuHeader({ site, locale, search, onSearch, L, primaryColor }: Props) {
+export default function MenuHeader({ site, locale, search, onSearch, L, primaryColor, emporterLinks = [], livraisonLinks = [] }: Props) {
   const enabledLocales: string[] = (() => {
     try { return JSON.parse(site?.enabledLocales || '["fr","en","it","es"]'); } catch { return ALL_LOCALES; }
   })();
@@ -85,6 +88,18 @@ export default function MenuHeader({ site, locale, search, onSearch, L, primaryC
             </svg>
             {orderLabel}
           </a>
+        )}
+
+        {/* Order mode bar — desktop only, inline */}
+        {(emporterLinks.length > 0 || livraisonLinks.length > 0) && (
+          <div className="hidden sm:flex flex-shrink-0">
+            <OrderModeBarDesktop
+              emporterLinks={emporterLinks}
+              livraisonLinks={livraisonLinks}
+              primaryColor={primaryColor}
+              locale={locale}
+            />
+          </div>
         )}
 
         {/* Language Switcher */}

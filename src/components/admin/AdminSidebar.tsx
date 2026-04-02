@@ -19,6 +19,7 @@ const NAV_GROUPS = [
       { href: '/admin/linktree', label: 'Linktree', icon: <LinkIcon /> },
       { href: '/admin/hero', label: 'Hero Section', icon: <Layers className="w-[18px] h-[18px]" /> },
       { href: '/admin/menu', label: 'Menu & Carte', icon: <ClipboardIcon /> },
+      { href: '/admin/commander', label: 'Commander', icon: <span className="text-[15px]">🥡</span> },
       { href: '/admin/promotions', label: 'Promotions', icon: <TagIcon /> },
       { href: '/admin/reviews', label: 'Avis clients', icon: <StarIcon /> },
       { href: '/admin/faqs', label: 'FAQs', icon: <QuestionIcon /> },
