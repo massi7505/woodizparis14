@@ -53,11 +53,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const products = await prisma.menuItem.findMany({
       where: { isVisible: true },
-      include: {
+      select: {
+        slug: true,
+        updatedAt: true,
         category: { select: { slug: true } },
         translations: { where: { locale: 'fr' }, select: { name: true } },
       },
-      select: { slug: true, category: true, translations: true, updatedAt: true },
     });
 
     for (const product of products) {
