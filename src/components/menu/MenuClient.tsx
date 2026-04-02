@@ -8,10 +8,14 @@ import { OrderModeBarMobile } from './OrderModeBar';
 import PromoSlider from './PromoSlider';
 import CategoryTabs from './CategoryTabs';
 import ProductCard from './ProductCard';
-import HeroSection from '@/components/linktree/HeroSection';
 import { SmartNotificationBar } from '@/components/linktree/NotificationBar';
 import type { NotificationBannerData, OpeningHoursData } from '@/components/linktree/NotificationBar';
 
+// HeroSection is a large component (~20kb+, imports 30+ lucide icons) — lazy-load it
+const HeroSection = dynamic(() => import('@/components/linktree/HeroSection'), {
+  ssr: false,
+  loading: () => <div className="w-full aspect-[4/3] sm:aspect-video md:aspect-[5/2] lg:aspect-[3/1] skeleton rounded-2xl md:rounded-3xl" />,
+});
 const ProductModal = dynamic(() => import('./ProductModal'), { ssr: false, loading: () => null });
 const GoogleReviewPopup = dynamic(() => import('./GoogleReviewPopup'), { ssr: false, loading: () => null });
 const LeadsPopup = dynamic(() => import('./LeadsPopup'), { ssr: false, loading: () => null });
@@ -389,10 +393,12 @@ export default function MenuClient({ categories, promos, reviews, faqs, site, lo
         )}
 
         {/* ===== PRODUCTS GRID ===== */}
-        {filteredCategories.map(cat => {
+        {filteredCategories.map((cat, catIdx) => {
           const availableCount = cat.products.filter(p => !p.isOutOfStock).length;
           const totalCount = cat.products.length;
           const hasOutOfStock = availableCount < totalCount;
+          // First 4 products of the first category are likely above the fold
+          const isFirstCat = catIdx === 0;
 
           return (
             <section key={cat.id} id={`cat-${cat.id}`} className="mt-6 scroll-mt-28">
@@ -419,13 +425,14 @@ export default function MenuClient({ categories, promos, reviews, faqs, site, lo
                 <p className="text-sm text-gray-400 py-4">—</p>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
-                  {cat.products.map(product => (
+                  {cat.products.map((product, pIdx) => (
                     <ProductCard
                       key={product.id}
                       product={product}
                       locale={locale}
                       onClick={() => handleProductClick(product, cat)}
                       primaryColor={primaryColor}
+                      priority={isFirstCat && pIdx < 4}
                     />
                   ))}
                 </div>

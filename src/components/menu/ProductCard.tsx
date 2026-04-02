@@ -21,6 +21,7 @@ interface Props {
   onClick: () => void;
   compact?: boolean;
   primaryColor: string;
+  priority?: boolean;
 }
 
 const BADGE_STYLES: Record<string, { bg: string; label: Record<string, string>; icon?: string }> = {
@@ -38,7 +39,7 @@ const OUT_OF_STOCK: Record<string, string> = {
   fr: 'Rupture de stock', en: 'Out of stock', it: 'Esaurito', es: 'Agotado',
 };
 
-export default function ProductCard({ product, locale, onClick, compact = false, primaryColor }: Props) {
+export default function ProductCard({ product, locale, onClick, compact = false, primaryColor, priority = false }: Props) {
   const t = product.translations[0];
   // FIX[BUG]: JSON.parse(product.badges) sans try/catch → crash si la valeur DB est un JSON invalide ou corrompu
   const badges: string[] = (() => {
@@ -53,7 +54,7 @@ export default function ProductCard({ product, locale, onClick, compact = false,
       <button onClick={onClick} className="menu-card w-full text-left" disabled={product.isOutOfStock}>
         <div className="relative aspect-square">
           {product.imageUrl ? (
-            <Image src={product.imageUrl} alt={t?.name || ''} fill sizes="(max-width: 640px) calc(50vw - 12px), (max-width: 1024px) calc(33vw - 16px), 300px" quality={65} className="object-cover" />
+            <Image src={product.imageUrl} alt={t?.name || ''} fill sizes="(max-width: 640px) calc(50vw - 12px), (max-width: 1024px) calc(33vw - 16px), 300px" quality={65} priority={priority} className="object-cover" />
           ) : (
             <div className="w-full h-full bg-gray-100 flex items-center justify-center text-3xl">🍕</div>
           )}
@@ -96,6 +97,7 @@ export default function ProductCard({ product, locale, onClick, compact = false,
             fill
             sizes="(max-width: 640px) calc(50vw - 12px), (max-width: 1024px) calc(33vw - 16px), 300px"
             quality={65}
+            priority={priority}
             className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (

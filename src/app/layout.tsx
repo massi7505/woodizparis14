@@ -104,14 +104,23 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-async function getJsonLd() {
-  try {
-    const settings = await getCachedSiteSettings();
-    const baseUrl = settings?.canonicalUrl?.replace(/\/$/, '') || 'https://woodiz.fr';
+const getCachedJsonLdData = unstable_cache(
+  async () => {
     const [hours, reviews] = await Promise.all([
       prisma.openingHours.findMany({ orderBy: { dayOfWeek: 'asc' } }),
       prisma.review.findMany({ where: { isVisible: true }, orderBy: { sortOrder: 'asc' }, take: 10 }),
     ]);
+    return { hours, reviews };
+  },
+  ['root-jsonld-data'],
+  { revalidate: 3600, tags: ['site-settings'] },
+);
+
+async function getJsonLd() {
+  try {
+    const settings = await getCachedSiteSettings();
+    const baseUrl = settings?.canonicalUrl?.replace(/\/$/, '') || 'https://woodiz.fr';
+    const { hours, reviews } = await getCachedJsonLdData();
 
     const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -193,8 +202,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="fr" className={`${playfair.variable} ${dmSans.variable}`}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* next/font self-hosts Google Fonts — no preconnect needed for fonts.googleapis.com */}
         <link rel="preconnect" href="https://public.blob.vercel-storage.com" crossOrigin="anonymous" />
         {faviconUrl ? (
           <>

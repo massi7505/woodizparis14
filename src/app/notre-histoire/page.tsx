@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/db';
 import StoryPageView from '@/components/story/StoryPageView';
 import type { Metadata } from 'next';
@@ -6,15 +7,27 @@ import { getCachedSeoSettings, buildSeoBase } from '@/lib/seo';
 export const revalidate = 30;
 const LOCALE = 'fr';
 
+const fetchStoryPageData = unstable_cache(
+  async () => {
+    const p = prisma as any;
+    const [page, site] = await Promise.all([
+      p.storyPage.findFirst({ include: { sections: { where: { isVisible: true }, orderBy: { sortOrder: 'asc' } } } }).catch(() => null),
+      p.siteSettings.findFirst().catch(() => null),
+    ]);
+    return { page, site };
+  },
+  ['story-page-data'],
+  { revalidate: 30, tags: ['story'] },
+);
+
 function tJson(json: string | null | undefined, locale: string, fallback = ''): string {
   if (!json) return fallback;
   try { const o = JSON.parse(json); return o[locale] || o.fr || fallback; } catch { return fallback; }
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const p = prisma as any;
-  const [page, settings] = await Promise.all([
-    p.storyPage.findFirst().catch(() => null),
+  const [{ page }, settings] = await Promise.all([
+    fetchStoryPageData(),
     getCachedSeoSettings(),
   ]);
   const { baseUrl } = buildSeoBase(settings);
@@ -44,12 +57,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function NotreHistoirePage() {
-  const p = prisma as any;
-  await p.storyPage.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } }).catch(() => {});
-  const [page, site] = await Promise.all([
-    p.storyPage.findFirst({ include: { sections: { where: { isVisible: true }, orderBy: { sortOrder: 'asc' } } } }).catch(() => null),
-    p.siteSettings.findFirst().catch(() => null),
-  ]);
+  const { page, site } = await fetchStoryPageData();
   if (!page?.isVisible) return <div className="min-h-screen flex items-center justify-center text-gray-400">Page non disponible</div>;
   return <StoryPageView page={page} locale={LOCALE} site={site} />;
 }

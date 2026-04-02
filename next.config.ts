@@ -33,13 +33,16 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
+  },
   experimental: {
     serverActions: {
       allowedOrigins: process.env.ALLOWED_ORIGINS
         ? process.env.ALLOWED_ORIGINS.split(',')
         : ['localhost:3000', '*.vercel.app'],
     },
-    optimizePackageImports: ['lucide-react'],
+    optimizePackageImports: ['lucide-react', 'clsx', 'tailwind-merge'],
   },
   async headers() {
     return [

@@ -1,8 +1,42 @@
 import type { Metadata } from 'next';
+import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { pickBestTranslation } from '@/lib/menu-data';
 import { getCachedSeoSettings, buildSeoBase, buildSharedMeta } from '@/lib/seo';
 import VisitTracker from '@/components/VisitTracker';
+
+const LOCALE = 'fr';
+
+const fetchLinktreePageData = unstable_cache(
+  async () => {
+    const p = prisma as any;
+    const [ltSettings, ltButtons, hours, banners, promos, faqs, siteSettings, footerData] = await Promise.allSettled([
+      prisma.linktreeSettings.findFirst(),
+      prisma.linktreeButton.findMany({ where: { isVisible: true }, orderBy: { sortOrder: 'asc' } }),
+      prisma.openingHours.findMany({ orderBy: { dayOfWeek: 'asc' } }),
+      p.notificationBanner?.findMany?.({
+        where: { isVisible: true },
+        orderBy: [{ priority: 'desc' }, { sortOrder: 'asc' }],
+        include: { translations: true },
+      }).catch(() => []) ?? [],
+      prisma.promotion.findMany({
+        where: { isVisible: true, showOnLinktree: true },
+        orderBy: { sortOrder: 'asc' },
+        include: { translations: { where: { locale: LOCALE } } },
+      }),
+      prisma.fAQ.findMany({
+        where: { isVisible: true, showOnMenu: true },
+        orderBy: { sortOrder: 'asc' },
+        include: { translations: { where: { locale: LOCALE } } },
+      }),
+      prisma.siteSettings.findFirst(),
+      prisma.footerSettings.findFirst(),
+    ]);
+    return { ltSettings, ltButtons, hours, banners, promos, faqs, siteSettings, footerData };
+  },
+  ['linktree-page-fr'],
+  { revalidate: 30, tags: ['linktree', 'menu'] },
+);
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
@@ -39,32 +73,8 @@ import { SmartNotificationBar } from '@/components/linktree/NotificationBar';
 
 export const revalidate = 30;
 
-const LOCALE = 'fr';
-
 export default async function LinktreePageFR() {
-  const p = prisma as any;
-  const [ltSettings, ltButtons, hours, banners, promos, faqs, siteSettings, footerData] = await Promise.allSettled([
-    prisma.linktreeSettings.findFirst(),
-    prisma.linktreeButton.findMany({ where: { isVisible: true }, orderBy: { sortOrder: 'asc' } }),
-    prisma.openingHours.findMany({ orderBy: { dayOfWeek: 'asc' } }),
-    p.notificationBanner?.findMany?.({
-      where: { isVisible: true },
-      orderBy: [{ priority: 'desc' }, { sortOrder: 'asc' }],
-      include: { translations: true },
-    }).catch(() => []) ?? [],
-    prisma.promotion.findMany({
-      where: { isVisible: true, showOnLinktree: true },
-      orderBy: { sortOrder: 'asc' },
-      include: { translations: { where: { locale: LOCALE } } },
-    }),
-    prisma.fAQ.findMany({
-      where: { isVisible: true, showOnMenu: true },
-      orderBy: { sortOrder: 'asc' },
-      include: { translations: { where: { locale: LOCALE } } },
-    }),
-    prisma.siteSettings.findFirst(),
-    prisma.footerSettings.findFirst(),
-  ]);
+  const { ltSettings, ltButtons, hours, banners, promos, faqs, siteSettings, footerData } = await fetchLinktreePageData();
 
   const settings = ltSettings.status === 'fulfilled' ? ltSettings.value : null;
   const buttons = ltButtons.status === 'fulfilled' ? ltButtons.value : [];

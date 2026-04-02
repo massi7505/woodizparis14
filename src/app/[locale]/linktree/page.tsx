@@ -1,8 +1,42 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { pickBestTranslation } from '@/lib/menu-data';
 import { getCachedSeoSettings, buildSeoBase, buildSharedMeta } from '@/lib/seo';
+
+function fetchLinktreeLocaleData(locale: string) {
+  return unstable_cache(
+    async () => {
+      const p = prisma as any;
+      const [ltSettings, ltButtons, hours, banners, promos, faqs, siteSettings, footerData] = await Promise.allSettled([
+        prisma.linktreeSettings.findFirst(),
+        prisma.linktreeButton.findMany({ where: { isVisible: true }, orderBy: { sortOrder: 'asc' } }),
+        prisma.openingHours.findMany({ orderBy: { dayOfWeek: 'asc' } }),
+        p.notificationBanner?.findMany?.({
+          where: { isVisible: true },
+          orderBy: [{ priority: 'desc' }, { sortOrder: 'asc' }],
+          include: { translations: true },
+        }).catch(() => []) ?? [],
+        prisma.promotion.findMany({
+          where: { isVisible: true, showOnLinktree: true },
+          orderBy: { sortOrder: 'asc' },
+          include: { translations: { where: { locale: { in: [...new Set([locale, 'fr'])] } } } },
+        }),
+        prisma.fAQ.findMany({
+          where: { isVisible: true, showOnMenu: true },
+          orderBy: { sortOrder: 'asc' },
+          include: { translations: { where: { locale } } },
+        }),
+        prisma.siteSettings.findFirst(),
+        prisma.footerSettings.findFirst(),
+      ]);
+      return { ltSettings, ltButtons, hours, banners, promos, faqs, siteSettings, footerData };
+    },
+    [`linktree-page-${locale}`],
+    { revalidate: 30, tags: ['linktree', 'menu'] },
+  )();
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   try {
@@ -46,29 +80,7 @@ type Props = { params: Promise<{ locale: string }> };
 export default async function LinktreePage({ params }: Props) {
   const { locale } = await params;
 
-  const p = prisma as any;
-  const [ltSettings, ltButtons, hours, banners, promos, faqs, siteSettings, footerData] = await Promise.allSettled([
-    prisma.linktreeSettings.findFirst(),
-    prisma.linktreeButton.findMany({ where: { isVisible: true }, orderBy: { sortOrder: 'asc' } }),
-    prisma.openingHours.findMany({ orderBy: { dayOfWeek: 'asc' } }),
-    p.notificationBanner?.findMany?.({
-      where: { isVisible: true },
-      orderBy: [{ priority: 'desc' }, { sortOrder: 'asc' }],
-      include: { translations: true },
-    }).catch(() => []) ?? [],
-    prisma.promotion.findMany({
-      where: { isVisible: true, showOnLinktree: true },
-      orderBy: { sortOrder: 'asc' },
-      include: { translations: { where: { locale: { in: [...new Set([locale, 'fr'])] } } } },
-    }),
-    prisma.fAQ.findMany({
-      where: { isVisible: true, showOnMenu: true },
-      orderBy: { sortOrder: 'asc' },
-      include: { translations: { where: { locale } } },
-    }),
-    prisma.siteSettings.findFirst(),
-    prisma.footerSettings.findFirst(),
-  ]);
+  const { ltSettings, ltButtons, hours, banners, promos, faqs, siteSettings, footerData } = await fetchLinktreeLocaleData(locale);
 
   const settings = ltSettings.status === 'fulfilled' ? ltSettings.value : null;
   const buttons = ltButtons.status === 'fulfilled' ? ltButtons.value : [];
