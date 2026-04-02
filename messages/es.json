@@ -1,0 +1,37 @@
+{
+  "nav": { "home": "Inicio", "menu": "Nuestra Carta", "contact": "Contacto" },
+  "linktree": {
+    "order": "Pedir", "contact": "Contacto", "discover": "Descubrir",
+    "openUntil": "Abierto hasta las {time}", "closedToday": "Cerrado hoy",
+    "opensAt": "Abre a las {time}", "hours": "Horario de apertura", "poweredBy": "Desarrollado por"
+  },
+  "menu": {
+    "search": "Buscar una pizza...", "featured": "Productos Destacados",
+    "weekSpecial": "Producto de la Semana", "ourMenu": "Nuestra Carta",
+    "allergens": "Alérgenos", "outOfStock": "Agotado", "close": "Cerrar",
+    "loading": "Cargando...", "noProducts": "No hay productos en esta categoría",
+    "delivery": "Entrega", "takeaway": "Para llevar", "onsite": "En el local", "all": "Todos",
+    "promos": "Promociones del Momento", "faqs": "Preguntas Frecuentes",
+    "reviews": "Lo que dicen nuestros clientes", "viewGoogleReviews": "Ver todas las reseñas de Google",
+    "badgeBestseller": "Más vendido", "badgeNew": "Nuevo", "badgeVeggie": "Vegetariano",
+    "badgeChef": "Elección del Chef", "badgeClassic": "Clásico", "badgePartie": "Compartido"
+  },
+  "allergens": {
+    "gluten": "Gluten", "lactose": "Lactosa", "eggs": "Huevos", "fish": "Pescado",
+    "shellfish": "Mariscos", "peanuts": "Cacahuetes", "nuts": "Frutos secos",
+    "celery": "Apio", "mustard": "Mostaza", "sesame": "Sésamo", "sulfites": "Sulfitos",
+    "lupin": "Altramuz", "molluscs": "Moluscos", "soya": "Soja"
+  },
+  "promo": { "delivery": "Entrega", "takeaway": "Para llevar", "onsite": "En el local", "all": "Todas las ofertas" },
+  "footer": { "rights": "Todos los derechos reservados" },
+  "days": { "0": "Lunes", "1": "Martes", "2": "Miércoles", "3": "Jueves", "4": "Viernes", "5": "Sábado", "6": "Domingo" },
+  "hero": {
+    "ratingText": "Valoración",
+    "exploreMenu": "Explorar el Menú",
+    "delivery": "Entrega a domicilio",
+    "genuine": "Productos 100% Auténticos",
+    "discount": "Cupones de Descuento",
+    "freshFood": "Comida Fresca y Saludable",
+    "fastDelivery": "Entrega Rápida"
+  }
+}

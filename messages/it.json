@@ -1,0 +1,37 @@
+{
+  "nav": { "home": "Home", "menu": "Il Nostro Menu", "contact": "Contatto" },
+  "linktree": {
+    "order": "Ordinare", "contact": "Contatto", "discover": "Scoprire",
+    "openUntil": "Aperto fino alle {time}", "closedToday": "Chiuso oggi",
+    "opensAt": "Apre alle {time}", "hours": "Orari di apertura", "poweredBy": "Powered by"
+  },
+  "menu": {
+    "search": "Cerca una pizza...", "featured": "Prodotti in Evidenza",
+    "weekSpecial": "Prodotto della Settimana", "ourMenu": "Il Nostro Menu",
+    "allergens": "Allergeni", "outOfStock": "Esaurito", "close": "Chiudi",
+    "loading": "Caricamento...", "noProducts": "Nessun prodotto in questa categoria",
+    "delivery": "Consegna", "takeaway": "Asporto", "onsite": "In loco", "all": "Tutti",
+    "promos": "Promozioni del Momento", "faqs": "Domande Frequenti",
+    "reviews": "Cosa dicono i nostri clienti", "viewGoogleReviews": "Vedi tutte le recensioni Google",
+    "badgeBestseller": "Bestseller", "badgeNew": "Nuovo", "badgeVeggie": "Vegetariano",
+    "badgeChef": "Scelta dello Chef", "badgeClassic": "Classico", "badgePartie": "Condiviso"
+  },
+  "allergens": {
+    "gluten": "Glutine", "lactose": "Lattosio", "eggs": "Uova", "fish": "Pesce",
+    "shellfish": "Crostacei", "peanuts": "Arachidi", "nuts": "Frutta a guscio",
+    "celery": "Sedano", "mustard": "Senape", "sesame": "Sesamo", "sulfites": "Solfiti",
+    "lupin": "Lupini", "molluscs": "Molluschi", "soya": "Soia"
+  },
+  "promo": { "delivery": "Consegna", "takeaway": "Asporto", "onsite": "In loco", "all": "Tutte le offerte" },
+  "footer": { "rights": "Tutti i diritti riservati" },
+  "days": { "0": "Lunedì", "1": "Martedì", "2": "Mercoledì", "3": "Giovedì", "4": "Venerdì", "5": "Sabato", "6": "Domenica" },
+  "hero": {
+    "ratingText": "Valutazione",
+    "exploreMenu": "Esplora il Menu",
+    "delivery": "Consegna a domicilio",
+    "genuine": "Prodotti 100% Autentici",
+    "discount": "Buoni Sconto",
+    "freshFood": "Cibo Fresco e Sano",
+    "fastDelivery": "Consegna Rapida"
+  }
+}

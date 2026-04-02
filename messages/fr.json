@@ -1,0 +1,85 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "menu": "Notre Carte",
+    "contact": "Contact"
+  },
+  "linktree": {
+    "order": "Commander",
+    "contact": "Contact",
+    "discover": "Découvrir",
+    "openUntil": "Ouvert jusqu'à {time}",
+    "closedToday": "Fermé aujourd'hui",
+    "opensAt": "Ouvre à {time}",
+    "hours": "Horaires d'ouverture",
+    "poweredBy": "Propulsé par"
+  },
+  "menu": {
+    "search": "Rechercher une pizza...",
+    "featured": "Produits en Vedette",
+    "weekSpecial": "Produit de la Semaine",
+    "ourMenu": "Notre Carte",
+    "allergens": "Allergènes",
+    "outOfStock": "Rupture de stock",
+    "close": "Fermer",
+    "loading": "Chargement...",
+    "noProducts": "Aucun produit dans cette catégorie",
+    "delivery": "Livraison",
+    "takeaway": "À emporter",
+    "onsite": "Sur place",
+    "all": "Toutes",
+    "promos": "Promotions du Moment",
+    "faqs": "Questions Fréquentes",
+    "reviews": "Ce que nos clients disent",
+    "viewGoogleReviews": "Voir tous les avis Google",
+    "badgeBestseller": "Bestseller",
+    "badgeNew": "Nouveau",
+    "badgeVeggie": "Végétarien",
+    "badgeChef": "Chef's Choice",
+    "badgeClassic": "Classique",
+    "badgePartie": "Partagé"
+  },
+  "allergens": {
+    "gluten": "Gluten",
+    "lactose": "Lactose",
+    "eggs": "Œufs",
+    "fish": "Poisson",
+    "shellfish": "Crustacés",
+    "peanuts": "Arachides",
+    "nuts": "Fruits à coque",
+    "celery": "Céleri",
+    "mustard": "Moutarde",
+    "sesame": "Sésame",
+    "sulfites": "Sulfites",
+    "lupin": "Lupin",
+    "molluscs": "Mollusques",
+    "soya": "Soja"
+  },
+  "promo": {
+    "delivery": "En livraison",
+    "takeaway": "À emporter",
+    "onsite": "Sur place",
+    "all": "Toutes offres"
+  },
+  "footer": {
+    "rights": "Tous droits réservés"
+  },
+  "days": {
+    "0": "Lundi",
+    "1": "Mardi",
+    "2": "Mercredi",
+    "3": "Jeudi",
+    "4": "Vendredi",
+    "5": "Samedi",
+    "6": "Dimanche"
+  },
+  "hero": {
+    "ratingText": "Avis",
+    "exploreMenu": "Découvrir le Menu",
+    "delivery": "Livraison à domicile",
+    "genuine": "Produits 100% Authentiques",
+    "discount": "Bons de Réduction",
+    "freshFood": "Nourriture Fraîche & Saine",
+    "fastDelivery": "Livraison Rapide"
+  }
+}

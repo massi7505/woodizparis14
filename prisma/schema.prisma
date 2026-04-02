@@ -1,0 +1,540 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ===================== SETTINGS =====================
+model SiteSettings {
+  id               Int     @id @default(1)
+  siteName         String  @default("Woodiz Paris 15")
+  siteSlogan       String? @default("Pizza artisanale au feu de bois")
+  logoUrl          String?
+  faviconUrl       String?
+  defaultLanguage  String  @default("fr")
+  homePage         String  @default("linktree") // "linktree" | "menu"
+  primaryColor     String  @default("#F59E0B")
+  secondaryColor   String  @default("#1F2937")
+  accentColor      String  @default("#EF4444")
+  backgroundColor  String  @default("#111827")
+  textColor        String  @default("#FFFFFF")
+  googleMapsUrl    String?
+  googleReviewsUrl String?
+  instagramUrl     String?
+  phoneNumber      String?
+  address          String?
+  metaTitle        String?
+  metaDescription  String?
+  metaKeywords     String?  @db.Text
+  metaImageUrl     String?
+  ogTitle          String?  // Override title for social sharing (OG)
+  ogDescription    String?  // Override description for social sharing (OG)
+  enabledLocales   String?  @default("[\"fr\",\"en\",\"it\",\"es\"]")
+  showFeatured     Boolean  @default(true)
+  showWeekSpecial  Boolean  @default(true)
+  featuredTitles   String?  // JSON {"fr":"...","en":"...","it":"...","es":"..."}
+  weekTitles       String?  // JSON {"fr":"...","en":"...","it":"...","es":"..."}
+  canonicalUrl        String?  // Canonical URL for SEO
+  reviewPopupEnabled     Boolean  @default(false)
+  reviewPopupDelay       Int      @default(5)    // seconds before showing popup
+  reviewPopupFrequency   String   @default("repeat") // "always" | "once" | "repeat"
+  reviewPopupRepeatDays  Int      @default(7)    // days before re-showing (frequency=repeat)
+  defaultCategoryId   Int?    // ID of the category shown by default in the menu tabs
+  googleReviewCount   Int?    // Custom review count displayed (e.g. 450)
+  googleRating        Float?  // Custom rating displayed (e.g. 4.8)
+  trackingEnabled     Boolean  @default(true)
+  orderButtonEnabled  Boolean  @default(false)
+  orderButtonLabel    String   @default("Commander en ligne")
+  orderButtonUrl      String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+// ===================== OPENING HOURS =====================
+model OpeningHours {
+  id        Int     @id @default(autoincrement())
+  dayOfWeek Int     // 0=Mon, 1=Tue, ..., 6=Sun
+  dayName   String  // "Lundi", "Mardi", etc.
+  isOpen    Boolean @default(true)
+  slots     String  // JSON: [{"open":"11:30","close":"14:30"},{"open":"18:00","close":"23:00"}]
+  sortOrder Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("opening_hours")
+}
+
+// ===================== LINKTREE =====================
+model LinktreeSettings {
+  id              Int     @id @default(1)
+  coverImageUrl   String?
+  coverVideoUrl   String?
+  coverType       String  @default("image") // "image" | "video" | "color"
+  coverColor      String  @default("#111827")
+  bgColor         String  @default("#111827")
+  bgImageUrl      String?
+  profileName     String  @default("Woodiz Paris 15")
+  profileSubtitle String?
+  profileImageUrl String?
+  noticeText      String?
+  noticeIcon      String?
+  showHours       Boolean @default(true)
+  showFaqs        Boolean @default(true)
+  showPromos      Boolean @default(true)
+  showNotif       Boolean @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("linktree_settings")
+}
+
+model LinktreeButton {
+  id          Int     @id @default(autoincrement())
+  label       String
+  url         String  @db.Text
+  icon        String? // SVG string or icon name
+  iconUrl     String?
+  bgColor            String  @default("#F59E0B")
+  bgGradient         String? // CSS gradient, e.g. "linear-gradient(135deg, #F59E0B, #EF4444)"
+  textColor          String  @default("#FFFFFF")
+  borderColor        String?
+  style              String  @default("filled") // "filled" | "outline" | "ghost"
+  labelTranslations  String? // JSON: {"fr":"Commander","en":"Order","it":"Ordina","es":"Pedir"}
+  isVisible   Boolean @default(true)
+  sortOrder   Int     @default(0)
+  section     String  @default("main") // section label for grouping
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("linktree_buttons")
+}
+
+// ===================== MENU =====================
+model MenuCategory {
+  id          Int           @id @default(autoincrement())
+  slug        String        @unique
+  iconUrl     String?
+  iconEmoji   String?
+  bgColor     String?
+  isVisible   Boolean       @default(true)
+  sortOrder   Int           @default(0)
+  translations MenuCategoryTranslation[]
+  products    MenuItem[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("menu_categories")
+}
+
+model MenuCategoryTranslation {
+  id         Int          @id @default(autoincrement())
+  categoryId Int
+  locale     String       // "fr", "en", "it", "es"
+  name       String
+  description String?
+  category   MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, locale])
+  @@map("menu_category_translations")
+}
+
+model MenuItem {
+  id           Int      @id @default(autoincrement())
+  categoryId   Int
+  slug         String   @unique
+  imageUrl     String?
+  price        Decimal  @db.Decimal(10, 2)
+  comparePrice Decimal? @db.Decimal(10, 2)
+  allergens    String?  // JSON array: ["gluten", "lactose", "eggs"]
+  badges       String?  // JSON array: ["bestseller", "nouveau", "veggie", "piment"]
+  isVisible    Boolean  @default(true)
+  isOutOfStock Boolean  @default(false)
+  isFeatured   Boolean  @default(false)
+  isWeekSpecial Boolean @default(false)
+  sortOrder    Int      @default(0)
+  category     MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  translations MenuItemTranslation[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("menu_items")
+}
+
+model MenuItemTranslation {
+  id          Int      @id @default(autoincrement())
+  itemId      Int
+  locale      String
+  name        String
+  description String?  @db.Text
+  item        MenuItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, locale])
+  @@map("menu_item_translations")
+}
+
+// ===================== PROMOTIONS =====================
+model Promotion {
+  id              Int      @id @default(autoincrement())
+  type            String   @default("delivery") // "delivery" | "takeaway" | "onsite" | "all"
+  bgType          String   @default("color") // "color" | "image" | "gradient"
+  bgColor         String   @default("#F59E0B")
+  bgGradient      String?  // CSS gradient string
+  bgImageUrl      String?  @db.Text
+  textColor       String   @default("#FFFFFF")
+  badgeText       String?  // "MENU MIDI", "OFFRE À EMPORTER"
+  badgeColor      String   @default("#EF4444")
+  originalPrice   Decimal? @db.Decimal(10, 2)
+  promoPrice      Decimal? @db.Decimal(10, 2)
+  titleSize       Int?     // font-size px for title (default 16)
+  descSize        Int?     // font-size px for description (default 12)
+  priceSize       Int?     // font-size px for price (default 24)
+  badgeSize       Int?     // font-size px for badge (default 10)
+  ctaSize         Int?     // font-size px for CTA button (default 12)
+  photoOnly       Boolean  @default(false)
+  availFrom       String?  // ex: "11:30"
+  availTo         String?  // ex: "14:30"
+  isVisible       Boolean  @default(true)
+  showOnLinktree  Boolean  @default(true)
+  showOnMenu      Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  startsAt        DateTime?
+  endsAt          DateTime?
+  translations    PromotionTranslation[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("promotions")
+}
+
+model PromotionTranslation {
+  id          Int       @id @default(autoincrement())
+  promotionId Int
+  locale      String
+  title       String
+  description String?   @db.Text
+  note        String?   @db.Text
+  cta         String?
+  ctaUrl      String?
+  imageUrl    String?   @db.Text // per-locale image override (replaces bgImageUrl for this language)
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+
+  @@unique([promotionId, locale])
+  @@map("promotion_translations")
+}
+
+// ===================== FAQS =====================
+model FAQ {
+  id           Int              @id @default(autoincrement())
+  isVisible    Boolean          @default(true)
+  showOnLinktree Boolean        @default(true)
+  showOnMenu   Boolean          @default(true)
+  sortOrder    Int              @default(0)
+  translations FAQTranslation[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@map("faqs")
+}
+
+model FAQTranslation {
+  id       Int    @id @default(autoincrement())
+  faqId    Int
+  locale   String
+  question String
+  answer   String @db.Text
+  faq      FAQ    @relation(fields: [faqId], references: [id], onDelete: Cascade)
+
+  @@unique([faqId, locale])
+  @@map("faq_translations")
+}
+
+// ===================== REVIEWS =====================
+model Review {
+  id         Int      @id @default(autoincrement())
+  authorName String
+  authorInitial String?
+  avatarColor String  @default("#F59E0B")
+  rating     Int      @default(5)
+  text       String   @db.Text
+  source     String   @default("google") // "google" | "manual"
+  date       DateTime @default(now())
+  isVisible  Boolean  @default(true)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("reviews")
+}
+
+// ===================== NOTIFICATION BAR =====================
+model NotificationBar {
+  id        Int     @id @default(1)
+  isVisible Boolean @default(true)
+  bgColor   String  @default("#1F2937")
+  textColor String  @default("#F59E0B")
+  icon      String?
+  link      String?
+  linkLabel String?
+  translations NotificationBarTranslation[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notification_bar")
+}
+
+model NotificationBarTranslation {
+  id     Int             @id @default(autoincrement())
+  barId  Int
+  locale String
+  text   String
+  bar    NotificationBar @relation(fields: [barId], references: [id], onDelete: Cascade)
+
+  @@unique([barId, locale])
+  @@map("notification_bar_translations")
+}
+
+// ===================== NOTIFICATION BANNERS (multi-banner system) =====================
+model NotificationBanner {
+  id              Int      @id @default(autoincrement())
+  isVisible       Boolean  @default(true)
+  bgColor         String   @default("#1F2937")
+  textColor       String   @default("#F59E0B")
+  icon            String?
+  link            String?
+  linkLabel       String?
+  priority        Int      @default(0)       // higher = shown first
+  displayDuration Int      @default(8000)    // ms before cycling to next
+  animType        String   @default("slide") // slide | fade | bounce
+  type            String   @default("custom") // custom | closed | open
+  scheduleEnabled Boolean  @default(false)
+  scheduleStart   String?                    // "12:00" HH:MM
+  scheduleEnd     String?                    // "14:00" HH:MM
+  scheduleDays    String   @default("[0,1,2,3,4,5,6]") // JSON — 0=Mon…6=Sun
+  sortOrder       Int      @default(0)
+  translations    NotificationBannerTranslation[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("notification_banners")
+}
+
+model NotificationBannerTranslation {
+  id       Int                @id @default(autoincrement())
+  bannerId Int
+  locale   String
+  text     String             @db.Text
+  banner   NotificationBanner @relation(fields: [bannerId], references: [id], onDelete: Cascade)
+
+  @@unique([bannerId, locale])
+  @@map("notification_banner_translations")
+}
+
+// ===================== FOOTER =====================
+model FooterSettings {
+  id          Int    @id @default(1)
+  bgColor     String @default("#1C1209")
+  textColor   String @default("#9CA3AF")
+  accentColor String @default("#F59E0B")
+  col1Json    String @db.Text // JSON: {title, items:[{label,url}]}
+  col2Json    String @db.Text
+  col3Json    String @db.Text
+  col4Json    String @db.Text
+  copyright   String @default("© 2024 Woodiz. Tous droits réservés.")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("footer_settings")
+}
+
+// ===================== VISITS =====================
+model Visit {
+  id        Int      @id @default(autoincrement())
+  visitorId String   // hash(IP + UserAgent), 16-char hex
+  ip        String?  // anonymized (first 3 octets only for IPv4)
+  userAgent String?
+  page      String   @default("menu") // "menu" | "linktree"
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([visitorId])
+  @@map("visits")
+}
+
+// ===================== ADMIN USER =====================
+model AdminUser {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("admin_users")
+}
+
+// ===================== STORY PAGE =====================
+model StoryPage {
+  id               Int            @id
+  isVisible        Boolean        @default(true)
+  seoTitleJson     String?
+  seoDescJson      String?
+  seoImageUrl      String?
+  heroTitleJson    String?
+  heroSubtitleJson String?
+  heroImageUrl     String?
+  heroVideoUrl     String?
+  heroColor        String         @default("#111827")
+  sections         StorySection[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  @@map("story_page")
+}
+
+model StorySection {
+  id          Int       @id @default(autoincrement())
+  pageId      Int       @default(1)
+  type        String    @default("text-image")
+  titleJson   String?
+  textJson    String?
+  imageUrl    String?
+  bgColor     String    @default("#ffffff")
+  textColor   String    @default("#111827")
+  accentColor String    @default("#f59e0b")
+  isVisible   Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  itemsJson   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  page        StoryPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  @@map("story_sections")
+}
+
+model LegalPage {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique
+  titleJson   String?
+  contentJson String?  @db.Text
+  isVisible   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@map("legal_pages")
+}
+
+// ===================== HERO SECTION =====================
+model HeroSettings {
+  id               Int     @id @default(1)
+  isVisible        Boolean @default(true)
+  autoplay         Boolean @default(true)
+  autoplayDelay    Int     @default(5000)
+  showDots         Boolean @default(true)
+  showArrows       Boolean @default(true)
+  ratingCount      String  @default("3,500+")
+  ratingTextJson   String? // JSON {"fr":"Avis","en":"Rating","it":"Valutazione","es":"Valoración"}
+  showRating       Boolean @default(true)
+  showFeatureCards Boolean @default(true)
+  accentColor      String  @default("#F59E0B")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  slides           HeroSlide[]
+  featureCards     HeroFeatureCard[]
+
+  @@map("hero_settings")
+}
+
+model HeroSlide {
+  id              Int      @id @default(autoincrement())
+  settingsId      Int      @default(1)
+  titleJson       String   @default("{\"fr\":\"Titre\",\"en\":\"Title\",\"it\":\"Titolo\",\"es\":\"Título\"}")
+  subtitleJson    String?
+  badgesJson      String?  // JSON array: [{"fr":"...","en":"...","it":"...","es":"..."}]
+  sideTextJson    String?
+  imageUrl        String?
+  mobileImageUrl  String?  // Image alternative pour mobile (optionnelle)
+  videoUrl        String?  // MP4/WebM — lecture en boucle, muet, pour le fond du slide
+  bgColor         String   @default("#1F2937")
+  bgGradient      String?
+  bgType          String   @default("color") // "color" | "image" | "gradient" | "video"
+  photoOnly       Boolean  @default(false)   // true = image sans texte ni overlay
+  isVisible       Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  settings        HeroSettings    @relation(fields: [settingsId], references: [id], onDelete: Cascade)
+  buttons         HeroSlideButton[]
+
+  @@map("hero_slides")
+}
+
+model HeroSlideButton {
+  id          Int    @id @default(autoincrement())
+  slideId     Int
+  labelJson   String @default("{\"fr\":\"Bouton\",\"en\":\"Button\",\"it\":\"Bottone\",\"es\":\"Botón\"}")
+  url         String @default("#")
+  icon        String?
+  bgColor     String @default("#F59E0B")
+  bgGradient  String?
+  bgType      String @default("color")
+  textColor   String @default("#FFFFFF")
+  style       String @default("filled") // "filled" | "outline" | "ghost"
+  sortOrder   Int    @default(0)
+  slide       HeroSlide @relation(fields: [slideId], references: [id], onDelete: Cascade)
+
+  @@map("hero_slide_buttons")
+}
+
+model HeroFeatureCard {
+  id          Int      @id @default(autoincrement())
+  settingsId  Int      @default(1)
+  titleJson   String   @default("{\"fr\":\"Titre\",\"en\":\"Title\",\"it\":\"Titolo\",\"es\":\"Título\"}")
+  icon        String   @default("truck")
+  bgColor     String   @default("#FEF08A")
+  textColor   String   @default("#1F2937")
+  iconColor   String   @default("#1F2937")
+  arrowColor  String   @default("#1F2937")
+  url         String?
+  isVisible   Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  settings    HeroSettings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
+
+  @@map("hero_feature_cards")
+}
+
+// ===================== MARKETING POPUP =====================
+model PopupSettings {
+  id            Int      @id @default(1)
+  enabled       Boolean  @default(true)
+  showFirstname Boolean  @default(true)
+  showPhone     Boolean  @default(true)
+  showEmail     Boolean  @default(false)
+  /// delay: 0 = immédiat, >0 = secondes, -1 = après scroll
+  delay         Int      @default(3)
+  /// showOnce: true = localStorage (une fois), false = sessionStorage (par session)
+  showOnce      Boolean  @default(true)
+  title         String   @default("Recevez nos promos & nouveautés")
+  message       String   @default("Inscrivez-vous pour être parmi les premiers informés de nos offres exclusives.")
+  buttonText    String   @default("S'inscrire")
+  updatedAt     DateTime @updatedAt
+
+  @@map("popup_settings")
+}
+
+model Lead {
+  id        Int      @id @default(autoincrement())
+  firstname String?
+  phone     String?
+  email     String?
+  source    String   @default("popup")
+  createdAt DateTime @default(now())
+
+  @@map("leads")
+}

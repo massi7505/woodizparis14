@@ -1,0 +1,85 @@
+{
+  "nav": {
+    "home": "Home",
+    "menu": "Our Menu",
+    "contact": "Contact"
+  },
+  "linktree": {
+    "order": "Order",
+    "contact": "Contact",
+    "discover": "Discover",
+    "openUntil": "Open until {time}",
+    "closedToday": "Closed today",
+    "opensAt": "Opens at {time}",
+    "hours": "Opening Hours",
+    "poweredBy": "Powered by"
+  },
+  "menu": {
+    "search": "Search a pizza...",
+    "featured": "Featured Products",
+    "weekSpecial": "Product of the Week",
+    "ourMenu": "Our Menu",
+    "allergens": "Allergens",
+    "outOfStock": "Out of stock",
+    "close": "Close",
+    "loading": "Loading...",
+    "noProducts": "No products in this category",
+    "delivery": "Delivery",
+    "takeaway": "Takeaway",
+    "onsite": "On Site",
+    "all": "All",
+    "promos": "Current Promotions",
+    "faqs": "Frequently Asked Questions",
+    "reviews": "What our customers say",
+    "viewGoogleReviews": "See all Google reviews",
+    "badgeBestseller": "Bestseller",
+    "badgeNew": "New",
+    "badgeVeggie": "Vegetarian",
+    "badgeChef": "Chef's Choice",
+    "badgeClassic": "Classic",
+    "badgePartie": "Shared"
+  },
+  "allergens": {
+    "gluten": "Gluten",
+    "lactose": "Lactose",
+    "eggs": "Eggs",
+    "fish": "Fish",
+    "shellfish": "Shellfish",
+    "peanuts": "Peanuts",
+    "nuts": "Tree Nuts",
+    "celery": "Celery",
+    "mustard": "Mustard",
+    "sesame": "Sesame",
+    "sulfites": "Sulfites",
+    "lupin": "Lupin",
+    "molluscs": "Molluscs",
+    "soya": "Soya"
+  },
+  "promo": {
+    "delivery": "Delivery",
+    "takeaway": "Takeaway",
+    "onsite": "On Site",
+    "all": "All offers"
+  },
+  "footer": {
+    "rights": "All rights reserved"
+  },
+  "days": {
+    "0": "Monday",
+    "1": "Tuesday",
+    "2": "Wednesday",
+    "3": "Thursday",
+    "4": "Friday",
+    "5": "Saturday",
+    "6": "Sunday"
+  },
+  "hero": {
+    "ratingText": "Rating",
+    "exploreMenu": "Explore Menu",
+    "delivery": "Delivery to your doorstep",
+    "genuine": "100% Genuine Products",
+    "discount": "Discount Voucher in Shop",
+    "freshFood": "Fresh Healthy Food",
+    "fastDelivery": "Fast Home Delivery"
+  }
+}

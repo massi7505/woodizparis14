@@ -1,0 +1,182 @@
+/**
+ * Shared data-fetching and serialization helpers for menu pages.
+ * Used by both /menu (FR only) and /[locale]/menu (all locales).
+ */
+import { prisma } from '@/lib/db';
+
+// ── Serialization helpers ──────────────────────────────────────────────────
+
+export function pickBestTranslation(translations: any[], locale: string) {
+  const priority = (loc: string) =>
+    loc === locale ? 0 : loc === 'fr' ? 1 : loc === 'en' ? 2 : loc === 'it' ? 3 : loc === 'es' ? 4 : 5;
+  const seen = new Set<string>();
+  const uniq = translations.filter(t => {
+    if (seen.has(t.locale)) return false;
+    seen.add(t.locale);
+    return true;
+  });
+  return uniq.sort((a, b) => priority(a.locale) - priority(b.locale));
+}
+
+export function serializeCategories(categories: any[], locale: string) {
+  return categories.map(cat => {
+    const seenIds = new Set<number>();
+    const uniqueProducts = (cat.products as any[]).filter(p => {
+      if (seenIds.has(p.id)) return false;
+      seenIds.add(p.id);
+      return true;
+    });
+    return {
+      ...cat,
+      createdAt: cat.createdAt?.toISOString() ?? null,
+      updatedAt: cat.updatedAt?.toISOString() ?? null,
+      translations: pickBestTranslation(cat.translations || [], locale),
+      products: uniqueProducts.map((p: any) => ({
+        ...p,
+        price: parseFloat(p.price?.toString() ?? '0'),
+        comparePrice: p.comparePrice ? parseFloat(p.comparePrice.toString()) : null,
+        createdAt: p.createdAt?.toISOString() ?? null,
+        updatedAt: p.updatedAt?.toISOString() ?? null,
+        translations: pickBestTranslation(p.translations || [], locale),
+      })),
+    };
+  });
+}
+
+export function serializePromos(promos: any[], locale = 'fr') {
+  return promos.map(p => ({
+    ...p,
+    promoPrice: p.promoPrice ? parseFloat(p.promoPrice.toString()) : null,
+    originalPrice: p.originalPrice ? parseFloat(p.originalPrice.toString()) : null,
+    createdAt: p.createdAt?.toISOString() ?? null,
+    updatedAt: p.updatedAt?.toISOString() ?? null,
+    startsAt: p.startsAt?.toISOString() ?? null,
+    endsAt: p.endsAt?.toISOString() ?? null,
+    translations: pickBestTranslation(p.translations || [], locale),
+  }));
+}
+
+export function serializeReviews(reviews: any[]) {
+  return reviews.map(r => ({
+    ...r,
+    date: r.date?.toISOString() ?? null,
+    createdAt: r.createdAt?.toISOString() ?? null,
+    updatedAt: r.updatedAt?.toISOString() ?? null,
+  }));
+}
+
+export function serializeSite(site: any) {
+  if (!site) return null;
+  return {
+    ...site,
+    createdAt: site.createdAt?.toISOString() ?? null,
+    updatedAt: site.updatedAt?.toISOString() ?? null,
+  };
+}
+
+// ── Data-fetching helpers ──────────────────────────────────────────────────
+
+/** Core menu data: categories, promos, reviews, FAQs, notif bar, site settings. */
+export async function fetchMenuCoreData(locale: string) {
+  const [categoriesRes, promosRes, reviewsRes, faqsRes, notifRes, siteRes] = await Promise.allSettled([
+    prisma.menuCategory.findMany({
+      where: { isVisible: true },
+      orderBy: { sortOrder: 'asc' },
+      include: {
+        translations: { where: { locale: { in: [...new Set([locale, 'fr'])] } } },
+        products: {
+          where: { isVisible: true },
+          orderBy: { sortOrder: 'asc' },
+          include: { translations: { where: { locale: { in: [...new Set([locale, 'fr'])] } } } },
+        },
+      },
+    }),
+    prisma.promotion.findMany({
+      where: { isVisible: true, showOnMenu: true },
+      orderBy: { sortOrder: 'asc' },
+      include: { translations: { where: { locale: { in: [...new Set([locale, 'fr'])] } } } },
+    }),
+    prisma.review.findMany({ where: { isVisible: true }, orderBy: { sortOrder: 'asc' } }),
+    prisma.fAQ.findMany({
+      where: { isVisible: true, showOnMenu: true },
+      orderBy: { sortOrder: 'asc' },
+      include: { translations: { where: { locale } } },
+    }),
+    prisma.notificationBar.findFirst({ where: { id: 1 }, include: { translations: true } }),
+    prisma.siteSettings.findFirst(),
+  ]);
+
+  const rawCategories = categoriesRes.status === 'fulfilled' ? categoriesRes.value : [];
+  return {
+    categories: serializeCategories(rawCategories.filter((c: any) => c.products.length > 0), locale),
+    promos: serializePromos(promosRes.status === 'fulfilled' ? promosRes.value : [], locale),
+    reviews: serializeReviews(reviewsRes.status === 'fulfilled' ? reviewsRes.value : []),
+    faqs: (faqsRes.status === 'fulfilled' ? faqsRes.value : []) as any[],
+    notifBar: notifRes.status === 'fulfilled' ? notifRes.value : null,
+    site: serializeSite(siteRes.status === 'fulfilled' ? siteRes.value : null),
+  };
+}
+
+/** Secondary menu data: banners, opening hours, order links, footer settings — run after core. */
+export async function fetchMenuSecondaryData() {
+  const p = prisma as any;
+  const [bannersRaw, openingHoursRaw, orderLinksRaw, footerRaw] = await Promise.all([
+    p.notificationBanner?.findMany?.({
+      where: { isVisible: true },
+      orderBy: [{ priority: 'desc' }, { sortOrder: 'asc' }],
+      include: { translations: true },
+    }).catch(() => []) ?? [],
+    prisma.openingHours.findMany({ orderBy: { sortOrder: 'asc' } }).catch(() => []),
+    prisma.linktreeButton
+      .findMany({ where: { isVisible: true, section: { in: ['commander', 'contact'] } }, orderBy: { sortOrder: 'asc' } })
+      .catch(() => []),
+    p.footerSettings?.findFirst?.().catch(() => null) ?? null,
+  ]);
+
+  return {
+    banners: (bannersRaw ?? []) as any[],
+    openingHours: (openingHoursRaw ?? []) as any[],
+    orderLinks: ((orderLinksRaw ?? []) as any[])
+      .filter((b: any) => b.url && !b.url.startsWith('/') && !b.url.startsWith('tel:') && !b.url.startsWith('mailto:'))
+      .map((b: any) => ({ label: b.label, url: b.url })),
+    footerSettings: footerRaw ?? null,
+  };
+}
+
+/** Hero section data (heroSettings, slides, feature cards). */
+export async function fetchHeroData() {
+  try {
+    const p = prisma as any;
+    const DEFAULT_SETTINGS = {
+      isVisible: true, autoplay: true, autoplayDelay: 5000,
+      showDots: true, showArrows: true, showFeatureCards: true, accentColor: '#F59E0B',
+    };
+    const [heroSettings, heroSlides, heroCards] = await Promise.all([
+      p.heroSettings?.findFirst?.().catch(() => null) ?? null,
+      p.heroSlide?.findMany?.({
+        where: { isVisible: true },
+        orderBy: { sortOrder: 'asc' },
+        include: { buttons: { orderBy: { sortOrder: 'asc' } } },
+      }).catch(() => []) ?? [],
+      p.heroFeatureCard?.findMany?.({ where: { isVisible: true }, orderBy: { sortOrder: 'asc' } }).catch(() => []) ?? [],
+    ]);
+    return {
+      settings: heroSettings ?? DEFAULT_SETTINGS,
+      slides: (heroSlides ?? []) as any[],
+      featureCards: (heroCards ?? []) as any[],
+    };
+  } catch (e) {
+    console.error('[hero fetch error]', e);
+    return null;
+  }
+}
+
+/** Popup/lead-capture settings. */
+export async function fetchPopupSettings() {
+  try {
+    const p = prisma as any;
+    return await p.popupSettings?.findFirst?.({ where: { id: 1 } }).catch(() => null) ?? null;
+  } catch {
+    return null;
+  }
+}
