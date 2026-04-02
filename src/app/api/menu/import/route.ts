@@ -12,21 +12,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'items must be an array' }, { status: 400 });
     }
 
+    // Pre-load all categories for fallback mapping
+    const allCategories = await prisma.menuCategory.findMany({ orderBy: { id: 'asc' } });
+    const categoryBySlug = new Map(allCategories.map(c => [c.slug, c]));
+    const categoryById = new Map(allCategories.map(c => [c.id, c]));
+
+    // Build relative-index map: sort unique categoryIds from file → map to sorted DB categories
+    const uniqueImportIds = [...new Set(
+      items.map((i: any) => Number(i.categoryId)).filter(n => !isNaN(n) && n > 0)
+    )].sort((a, b) => a - b);
+    const sortedDbCategories = [...allCategories].sort((a, b) => a.sortOrder - b.sortOrder);
+    const relativeIndexMap = new Map(
+      uniqueImportIds.map((id, idx) => [id, sortedDbCategories[idx]])
+    );
+
     let created = 0;
+    let skipped = 0;
+
     for (const item of items) {
       const { slug, categorySlug, categoryId, price, comparePrice, translations: translationsArr, ...rest } = item;
-      if (!slug || !price) continue;
+      if (!slug || !price) { skipped++; continue; }
 
-      // Find category: prefer categorySlug, fallback to categoryId
+      // Resolve category: slug > exact ID > relative index mapping
       let category: any = null;
       if (categorySlug) {
-        category = await prisma.menuCategory.findUnique({ where: { slug: categorySlug } });
-      } else if (categoryId) {
-        category = await prisma.menuCategory.findUnique({ where: { id: Number(categoryId) } });
+        category = categoryBySlug.get(categorySlug) ?? null;
       }
-      if (!category) continue;
+      if (!category && categoryId) {
+        category = categoryById.get(Number(categoryId)) ?? null;
+      }
+      if (!category && categoryId) {
+        category = relativeIndexMap.get(Number(categoryId)) ?? null;
+      }
+      if (!category) { skipped++; continue; }
 
-      // Build translations: support both flat (fr_name) and array ({ locale, name, description })
+      // Build translations: support array format and flat fr_name/en_name format
       let translations: { locale: string; name: string; description?: string | null }[];
       if (Array.isArray(translationsArr) && translationsArr.length > 0) {
         translations = translationsArr.map((t: any) => ({
@@ -43,6 +63,8 @@ export async function POST(req: NextRequest) {
             description: rest[`${l}_description`] || null,
           }));
       }
+
+      if (translations.length === 0) { skipped++; continue; }
 
       await prisma.menuItem.upsert({
         where: { slug },
@@ -76,7 +98,7 @@ export async function POST(req: NextRequest) {
       created++;
     }
 
-    return NextResponse.json({ created });
+    return NextResponse.json({ created, skipped });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: 'Import failed' }, { status: 500 });

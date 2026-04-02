@@ -192,21 +192,24 @@ export default function AdminMenuPage() {
   }
 
   function exportProducts() {
-    const data = allProducts.map(p => ({
-      slug: p.slug,
-      imageUrl: p.imageUrl,
-      price: p.price,
-      comparePrice: p.comparePrice,
-      allergens: p.allergens,
-      badges: p.badges,
-      isVisible: p.isVisible,
-      isOutOfStock: p.isOutOfStock,
-      isFeatured: p.isFeatured,
-      isWeekSpecial: p.isWeekSpecial,
-      sortOrder: p.sortOrder,
-      categoryId: p.categoryId,
-      translations: p.translations,
-    }));
+    const data = allProducts.map(p => {
+      const cat = categories.find(c => c.id === p.categoryId);
+      return {
+        slug: p.slug,
+        categorySlug: cat?.slug ?? '',
+        imageUrl: p.imageUrl,
+        price: p.price,
+        comparePrice: p.comparePrice,
+        allergens: p.allergens,
+        badges: p.badges,
+        isVisible: p.isVisible,
+        isOutOfStock: p.isOutOfStock,
+        isFeatured: p.isFeatured,
+        isWeekSpecial: p.isWeekSpecial,
+        sortOrder: p.sortOrder,
+        translations: p.translations,
+      };
+    });
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
