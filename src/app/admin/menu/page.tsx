@@ -64,6 +64,8 @@ export default function AdminMenuPage() {
   const [showImport, setShowImport] = useState(false);
   const [importJson, setImportJson] = useState('');
   const [importing, setImporting] = useState(false);
+  const [importPreview, setImportPreview] = useState<any[]>([]);
+  const [importStep, setImportStep] = useState<'upload' | 'preview'>('upload');
   const [toast, setToast] = useState('');
   const [defaultCategoryId, setDefaultCategoryId] = useState<number | null>(null);
 
@@ -279,10 +281,45 @@ export default function AdminMenuPage() {
     await fetch('/api/reorder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'product', items: arr.map((p: any, idx: number) => ({ id: p.id, sortOrder: idx })) }) });
   }
 
+  function parseCSV(text: string): any[] {
+    const lines = text.trim().split('\n');
+    if (lines.length < 2) return [];
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+    return lines.slice(1).map(line => {
+      const vals = line.match(/(".*?"|[^,]+|(?<=,)(?=,)|(?<=,)$|^(?=,))/g) || [];
+      const obj: any = {};
+      headers.forEach((h, i) => { obj[h] = (vals[i] || '').trim().replace(/^"|"$/g, ''); });
+      return obj;
+    });
+  }
+
+  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      try {
+        const items = file.name.endsWith('.csv') ? parseCSV(text) : JSON.parse(text);
+        if (!Array.isArray(items) || items.length === 0) { showToast('❌ Fichier vide ou format invalide'); return; }
+        setImportPreview(items);
+        setImportStep('preview');
+      } catch { showToast('❌ Fichier invalide'); }
+    };
+    reader.readAsText(file);
+  }
+
+  function closeImport() {
+    setShowImport(false);
+    setImportStep('upload');
+    setImportPreview([]);
+    setImportJson('');
+  }
+
   async function runImport() {
     setImporting(true);
     try {
-      const items = JSON.parse(importJson);
+      const items = importStep === 'preview' ? importPreview : JSON.parse(importJson);
       const res = await fetch('/api/menu/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -291,8 +328,7 @@ export default function AdminMenuPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erreur');
       showToast(`✅ ${data.created} produit(s) importé(s)`);
-      setShowImport(false);
-      setImportJson('');
+      closeImport();
       load();
     } catch (e: any) {
       showToast('❌ ' + (e.message || 'JSON invalide'));
@@ -576,41 +612,141 @@ export default function AdminMenuPage() {
 
       {showImport && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="rounded-2xl w-full max-w-xl" style={{ background: 'var(--admin-surface)', border: '1px solid var(--admin-border-light)' }}>
-            <div className="flex items-center justify-between p-5" style={{ borderBottom: '1px solid var(--admin-border)' }}>
-              <h2 className="font-bold" style={{ color: 'var(--admin-text)' }}>Importer des produits (JSON)</h2>
-              <button onClick={() => setShowImport(false)} style={{ color: 'var(--admin-text-muted)' }} className="hover:text-white">
-                <CloseIcon />
-              </button>
-            </div>
-            <div className="p-5 space-y-4">
-              <p className="text-xs" style={{ color: 'var(--admin-text-muted)' }}>
-                Collez un tableau JSON de produits. Chaque produit doit avoir: <code className="text-amber-400">slug</code>, <code className="text-amber-400">categorySlug</code>, <code className="text-amber-400">price</code>, et les traductions <code className="text-amber-400">fr_name</code>, <code className="text-amber-400">en_name</code>, etc.
-              </p>
-              <div className="rounded-xl p-3 text-xs font-mono" style={{ background: 'var(--admin-surface-2)', color: 'var(--admin-text-muted)' }}>
-                {`[{"slug":"pizza-reine","categorySlug":"pizzas","price":"13.5","fr_name":"Pizza Reine","fr_description":"Jambon, champignons","en_name":"Queen Pizza"}]`}
+          <div className="rounded-2xl w-full flex flex-col" style={{
+            background: 'var(--admin-surface)',
+            border: '1px solid var(--admin-border-light)',
+            maxWidth: importStep === 'preview' ? '960px' : '560px',
+            maxHeight: '90vh',
+          }}>
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 flex-shrink-0" style={{ borderBottom: '1px solid var(--admin-border)' }}>
+              <div>
+                <h2 className="font-bold" style={{ color: 'var(--admin-text)' }}>
+                  {importStep === 'upload' ? 'Importer des produits' : `Prévisualiser · ${importPreview.length} produit(s)`}
+                </h2>
+                {importStep === 'preview' && (
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--admin-text-muted)' }}>Modifiez, ajoutez ou supprimez des lignes avant d'enregistrer</p>
+                )}
               </div>
-              <textarea
-                value={importJson}
-                onChange={e => setImportJson(e.target.value)}
-                className="admin-input resize-none h-40 font-mono text-xs"
-                placeholder='[{"slug":"...", "categorySlug":"...", "price":"12.5", "fr_name":"...", "en_name":"..."}]'
-              />
-              {importJson.trim() && (() => {
-                try {
-                  const items = JSON.parse(importJson);
-                  return <p className="text-sm text-emerald-400">{Array.isArray(items) ? `${items.length} produit(s) détecté(s)` : 'Format invalide'}</p>;
-                } catch {
-                  return <p className="text-sm text-red-400">JSON invalide</p>;
-                }
-              })()}
+              <button onClick={closeImport} style={{ color: 'var(--admin-text-muted)' }} className="hover:text-white"><CloseIcon /></button>
             </div>
-            <div className="flex gap-2 p-5 pt-0">
-              <button onClick={() => setShowImport(false)} className="flex-1 admin-btn-ghost">Annuler</button>
-              <button onClick={runImport} disabled={importing || !importJson.trim()} className="flex-1 admin-btn-primary disabled:opacity-50">
-                {importing ? 'Import...' : 'Importer'}
-              </button>
-            </div>
+
+            {/* Step 1 — Upload */}
+            {importStep === 'upload' && (
+              <>
+                <div className="p-5 space-y-4 overflow-y-auto">
+                  <label
+                    className="flex flex-col items-center justify-center gap-3 rounded-xl p-8 cursor-pointer transition-colors border-2 border-dashed"
+                    style={{ borderColor: 'var(--admin-border-light)', background: 'var(--admin-surface-2)' }}
+                    onDragOver={e => e.preventDefault()}
+                    onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFileUpload({ target: { files: [f] } } as any); }}
+                  >
+                    <input type="file" accept=".json,.csv" className="hidden" onChange={handleFileUpload} />
+                    <div className="text-4xl">📂</div>
+                    <div className="text-center">
+                      <p className="font-medium" style={{ color: 'var(--admin-text)' }}>Glissez un fichier ou cliquez pour choisir</p>
+                      <p className="text-xs mt-1" style={{ color: 'var(--admin-text-muted)' }}>Formats acceptés : JSON · CSV</p>
+                    </div>
+                  </label>
+
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-px" style={{ background: 'var(--admin-border)' }} />
+                    <span className="text-xs" style={{ color: 'var(--admin-text-muted)' }}>ou coller du JSON</span>
+                    <div className="flex-1 h-px" style={{ background: 'var(--admin-border)' }} />
+                  </div>
+
+                  <textarea
+                    value={importJson}
+                    onChange={e => setImportJson(e.target.value)}
+                    className="admin-input resize-none h-28 font-mono text-xs"
+                    placeholder='[{"slug":"pizza-reine","categorySlug":"pizzas","price":"13.5","fr_name":"Pizza Reine"}]'
+                  />
+                  {importJson.trim() && (() => {
+                    try {
+                      const items = JSON.parse(importJson);
+                      return <p className="text-sm text-emerald-400">{Array.isArray(items) ? `${items.length} produit(s) détecté(s)` : 'Format invalide'}</p>;
+                    } catch { return <p className="text-sm text-red-400">JSON invalide</p>; }
+                  })()}
+                </div>
+                <div className="flex gap-2 p-5 pt-0 flex-shrink-0">
+                  <button onClick={closeImport} className="flex-1 admin-btn-ghost">Annuler</button>
+                  <button
+                    disabled={!importJson.trim()}
+                    className="flex-1 admin-btn-primary disabled:opacity-50"
+                    onClick={() => {
+                      try {
+                        const items = JSON.parse(importJson);
+                        if (!Array.isArray(items) || items.length === 0) { showToast('❌ JSON vide ou invalide'); return; }
+                        setImportPreview(items);
+                        setImportStep('preview');
+                      } catch { showToast('❌ JSON invalide'); }
+                    }}
+                  >
+                    Prévisualiser →
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* Step 2 — Preview & Edit */}
+            {importStep === 'preview' && (
+              <>
+                <div className="overflow-auto flex-1 p-4">
+                  <table className="w-full text-xs" style={{ borderCollapse: 'separate', borderSpacing: '0 3px' }}>
+                    <thead>
+                      <tr>
+                        {['#', 'Nom FR', 'Slug', 'Catégorie', 'Prix €', 'Description FR', ''].map(h => (
+                          <th key={h} className="text-left pb-2 px-2 font-medium whitespace-nowrap" style={{ color: 'var(--admin-text-muted)' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {importPreview.map((item, i) => (
+                        <tr key={i}>
+                          <td className="px-2 py-0.5 rounded-l-lg text-center w-6" style={{ background: 'var(--admin-surface-2)', color: 'var(--admin-text-muted)' }}>{i + 1}</td>
+                          <td className="px-1 py-0.5" style={{ background: 'var(--admin-surface-2)' }}>
+                            <input className="admin-input text-xs py-1 px-2 h-7 min-w-[120px]" value={item.fr_name || ''}
+                              onChange={e => setImportPreview(p => p.map((r, ri) => ri === i ? { ...r, fr_name: e.target.value } : r))} />
+                          </td>
+                          <td className="px-1 py-0.5" style={{ background: 'var(--admin-surface-2)' }}>
+                            <input className="admin-input text-xs py-1 px-2 h-7 font-mono min-w-[110px]" value={item.slug || ''}
+                              onChange={e => setImportPreview(p => p.map((r, ri) => ri === i ? { ...r, slug: e.target.value } : r))} />
+                          </td>
+                          <td className="px-1 py-0.5" style={{ background: 'var(--admin-surface-2)' }}>
+                            <input className="admin-input text-xs py-1 px-2 h-7 min-w-[100px]" value={item.categorySlug || ''}
+                              onChange={e => setImportPreview(p => p.map((r, ri) => ri === i ? { ...r, categorySlug: e.target.value } : r))} />
+                          </td>
+                          <td className="px-1 py-0.5" style={{ background: 'var(--admin-surface-2)' }}>
+                            <input type="number" step="0.5" className="admin-input text-xs py-1 px-2 h-7 w-20" value={item.price || ''}
+                              onChange={e => setImportPreview(p => p.map((r, ri) => ri === i ? { ...r, price: e.target.value } : r))} />
+                          </td>
+                          <td className="px-1 py-0.5" style={{ background: 'var(--admin-surface-2)' }}>
+                            <input className="admin-input text-xs py-1 px-2 h-7 min-w-[150px]" value={item.fr_description || ''}
+                              onChange={e => setImportPreview(p => p.map((r, ri) => ri === i ? { ...r, fr_description: e.target.value } : r))} />
+                          </td>
+                          <td className="px-2 py-0.5 rounded-r-lg" style={{ background: 'var(--admin-surface-2)' }}>
+                            <button onClick={() => setImportPreview(p => p.filter((_, ri) => ri !== i))}
+                              className="text-[var(--admin-text-muted)] hover:text-red-400 transition-colors" title="Supprimer">
+                              <CloseIcon />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="flex gap-2 p-4 flex-shrink-0" style={{ borderTop: '1px solid var(--admin-border)' }}>
+                  <button onClick={() => { setImportStep('upload'); setImportPreview([]); }} className="admin-btn-ghost text-sm">← Retour</button>
+                  <button
+                    onClick={() => setImportPreview(p => [...p, { slug: '', categorySlug: '', price: '', fr_name: '', fr_description: '' }])}
+                    className="admin-btn-ghost text-sm"
+                  >+ Ligne</button>
+                  <button onClick={runImport} disabled={importing || importPreview.length === 0} className="flex-1 admin-btn-primary disabled:opacity-50 text-sm">
+                    {importing ? 'Enregistrement...' : `Enregistrer ${importPreview.length} produit(s)`}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
