@@ -35,7 +35,7 @@ function buildCSP(nonce: string): string {
     "worker-src 'self' blob:",
     "object-src 'none'",
     "frame-ancestors 'none'",
-    "frame-src https://www.google.com https://maps.google.com https://www.youtube.com",
+    "frame-src https://www.google.com https://maps.google.com https://www.youtube.com https://axept.io https://*.axept.io",
     "base-uri 'self'",
     "form-action 'self' https:",
     "upgrade-insecure-requests",

@@ -62,7 +62,8 @@ export default function MenuFooter({ site, locale, orderLinks = [], footerSettin
       { label: 'Notre Histoire', url: '/notre-histoire' },
     ],
   });
-  const col2 = parseCol(footerSettings?.col2Json, { title: L.order, items: [] });
+  const col2Raw = parseCol(footerSettings?.col2Json, { title: L.order, items: [] });
+  const col2 = { ...col2Raw, title: col2Raw.title || L.order };
   const col3 = parseCol(footerSettings?.col3Json, { title: '', items: [] });
   const copyright = (footerSettings?.copyright || `© ${year} ${name}. Tous droits réservés.`)
     .replace('{year}', String(year))
@@ -164,7 +165,7 @@ export default function MenuFooter({ site, locale, orderLinks = [], footerSettin
           )}
 
           {/* ── Column 2 (liens personnalisés footer uniquement) ── */}
-          {col2.items.length > 0 && (
+          {(col2.items.length > 0 || col2.title) && (
             <div>
               {col2.title && <h3 className="text-white font-bold text-sm mb-4">{col2.title}</h3>}
               <div className="space-y-2 text-xs text-gray-500">
@@ -239,7 +240,7 @@ export default function MenuFooter({ site, locale, orderLinks = [], footerSettin
             <a href="/legal/allergenes" className="hover:text-gray-400 transition-colors">Tableau des allergènes</a>
             <button
               type="button"
-              onClick={() => window.dispatchEvent(new CustomEvent('woodiz:open-consent'))}
+              onClick={() => (window as any).openAxeptioCookies?.()}
               className="hover:text-gray-400 transition-colors cursor-pointer"
             >
               🍪 Gérer les cookies
