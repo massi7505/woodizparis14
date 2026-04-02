@@ -110,8 +110,8 @@ export function OrderModeBarMobile({
   livraisonModeIconUrl, emporterModeIconUrl,
 }: Props) {
   const L = LABELS[locale] || LABELS.fr;
-  const livraisonColor = primaryColor;
-  const emporterColor = '#EF4444';
+  const livraisonColor = '#111827';
+  const emporterColor = '#111827';
 
   const livraison = useModeDropdown(livraisonLinks);
   const emporter  = useModeDropdown(emporterLinks);
@@ -236,8 +236,8 @@ export function OrderModeBarDesktop({
   livraisonModeIconUrl, emporterModeIconUrl,
 }: Props) {
   const L = LABELS[locale] || LABELS.fr;
-  const livraisonColor = primaryColor;
-  const emporterColor = '#EF4444';
+  const livraisonColor = '#111827';
+  const emporterColor = '#111827';
 
   const livraison = useModeDropdown(livraisonLinks);
   const emporter  = useModeDropdown(emporterLinks);
