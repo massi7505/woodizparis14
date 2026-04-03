@@ -312,7 +312,7 @@ export default function MenuClient({ categories, promos, reviews, faqs, site, lo
         {/* ===== FEATURED ===== */}
         {showFeatured && featuredProducts.length > 0 && !search && (
           <section className="mt-8">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">{featuredTitle}</h2>
+            <h2 className="font-display text-xl font-bold text-gray-900 tracking-tight mb-4">{featuredTitle}</h2>
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide md:grid md:grid-cols-5 md:overflow-visible md:pb-0 lg:grid-cols-6 xl:grid-cols-8">
               {featuredProducts.slice(0, 8).map(p => {
                 const cat = categories.find(c => c.products.some(cp => cp.id === p.id));
@@ -329,7 +329,7 @@ export default function MenuClient({ categories, promos, reviews, faqs, site, lo
         {/* ===== WEEK SPECIALS ===== */}
         {showWeekSpecial && weekSpecials.length > 0 && !search && (
           <section className="mt-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">{weekTitle}</h2>
+            <h2 className="font-display text-xl font-bold text-gray-900 tracking-tight mb-4">{weekTitle}</h2>
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide md:grid md:grid-cols-5 md:overflow-visible md:pb-0 lg:grid-cols-6 xl:grid-cols-8">
               {weekSpecials.slice(0, 8).map(p => {
                 const cat = categories.find(c => c.products.some(cp => cp.id === p.id));
@@ -347,10 +347,10 @@ export default function MenuClient({ categories, promos, reviews, faqs, site, lo
         {!search && (
           <>
             <div className="mt-8 mb-1 flex items-center gap-2">
-              <h2 className="text-lg font-bold text-gray-900">{L.menu}</h2>
+              <h2 className="font-display text-xl font-bold text-gray-900 tracking-tight">{L.menu}</h2>
               <div className="flex-1 h-px bg-gray-200" />
             </div>
-            <div className="sticky bg-gray-50 z-30 pt-3 pb-2 -mx-4 px-4" style={{ top: spacerH }}>
+            <div className="sticky z-30 pt-3 pb-2 -mx-4 px-4 backdrop-blur-md bg-white/90 border-b border-gray-100" style={{ top: spacerH }}>
               <CategoryTabs
                 categories={categories}
                 active={activeCategoryId}
@@ -409,7 +409,7 @@ export default function MenuClient({ categories, promos, reviews, faqs, site, lo
                 ) : cat.iconEmoji ? (
                   <span className="text-2xl">{cat.iconEmoji}</span>
                 ) : null}
-                <h3 className="text-base font-bold text-gray-900">
+                <h3 className="font-display text-base font-bold text-gray-900 tracking-tight">
                   {cat.translations[0]?.name || cat.slug}
                 </h3>
                 {hasOutOfStock ? (
