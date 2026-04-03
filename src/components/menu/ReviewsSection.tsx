@@ -43,7 +43,7 @@ export function ReviewsSection({ reviews, site, locale, L, primaryColor }: Revie
     <section className="mt-12">
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h2 className="text-lg font-bold text-gray-900">{L.reviews}</h2>
+          <h2 className="font-display text-xl font-bold text-gray-900 tracking-tight">{L.reviews}</h2>
           <div className="flex items-center gap-2 mt-1">
             <StarRating rating={Math.round(displayRating)} color={primaryColor} />
             <span className="text-sm font-bold text-gray-700">{displayRating.toFixed(1)}</span>
