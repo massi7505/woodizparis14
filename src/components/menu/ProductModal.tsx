@@ -60,9 +60,10 @@ export default function ProductModal({ product, category, locale, onClose, prima
           )}
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 w-9 h-9 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-md hover:bg-white transition-colors"
+            className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-all hover:opacity-90 active:scale-95"
+            style={{ backgroundColor: primaryColor }}
           >
-            <CloseIcon className="w-5 h-5 text-gray-700" />
+            <CloseIcon className="w-5 h-5 text-white" />
           </button>
 
           {/* Category badge */}

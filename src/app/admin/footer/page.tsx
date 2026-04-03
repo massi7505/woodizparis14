@@ -22,6 +22,8 @@ export default function AdminFooterPage() {
   const [col3, setCol3] = useState<FooterCol>({ title: '', items: [] });
   const [col4, setCol4] = useState<FooterCol>({ title: 'Newsletter', items: [] });
   const [copyright, setCopyright] = useState('© {year} Woodiz. Tous droits réservés.');
+  const [bgColor, setBgColor] = useState('#0f172a');
+  const [textColor, setTextColor] = useState('#9CA3AF');
   const [accentColor, setAccentColor] = useState('#F59E0B');
 
   useEffect(() => {
@@ -33,6 +35,8 @@ export default function AdminFooterPage() {
         setCol3(parseCol(d.col3Json, EMPTY_COL));
         setCol4(parseCol(d.col4Json, { title: 'Newsletter', items: [] }));
         setCopyright(d.copyright || '© {year} Woodiz. Tous droits réservés.');
+        setBgColor(d.bgColor || '#0f172a');
+        setTextColor(d.textColor || '#9CA3AF');
         setAccentColor(d.accentColor || '#F59E0B');
       })
       .catch(() => setError('Erreur de chargement'))
@@ -53,6 +57,8 @@ export default function AdminFooterPage() {
           col3Json: JSON.stringify(col3),
           col4Json: JSON.stringify(col4),
           copyright,
+          bgColor,
+          textColor,
           accentColor,
         }),
       });
@@ -118,9 +124,46 @@ export default function AdminFooterPage() {
         ))}
       </div>
 
-      {/* Copyright */}
-      <div className="admin-card p-5 space-y-4">
-        <h2 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Bas de page</h2>
+      {/* Copyright + Colors */}
+      <div className="admin-card p-5 space-y-5">
+        <h2 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Apparence du footer</h2>
+
+        {/* Color controls */}
+        <div className="grid grid-cols-3 gap-4">
+          {[
+            { label: 'Fond', value: bgColor, onChange: setBgColor },
+            { label: 'Texte', value: textColor, onChange: setTextColor },
+            { label: 'Accent / liens', value: accentColor, onChange: setAccentColor },
+          ].map(({ label, value, onChange }) => (
+            <div key={label}>
+              <label className="admin-label">{label}</label>
+              <div className="flex items-center gap-2 mt-1">
+                <input
+                  type="color"
+                  value={value}
+                  onChange={e => onChange(e.target.value)}
+                  className="w-10 h-10 rounded-lg border border-white/10 bg-transparent cursor-pointer flex-shrink-0"
+                />
+                <input
+                  type="text"
+                  value={value}
+                  onChange={e => onChange(e.target.value)}
+                  className="admin-input font-mono text-sm min-w-0"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Preview strip */}
+        <div className="rounded-xl overflow-hidden border border-white/10">
+          <div className="px-4 py-3 flex items-center justify-between" style={{ backgroundColor: bgColor }}>
+            <span className="text-xs font-bold" style={{ color: accentColor }}>Woodiz</span>
+            <span className="text-xs" style={{ color: textColor }}>Aperçu footer</span>
+            <a className="text-xs font-semibold" style={{ color: accentColor }}>Lien →</a>
+          </div>
+        </div>
+
         <div>
           <label className="admin-label">Texte copyright <span className="font-normal opacity-60">(utilisez {'{year}'} pour l&apos;année)</span></label>
           <input
@@ -130,23 +173,6 @@ export default function AdminFooterPage() {
             className="admin-input w-full"
             placeholder="© {year} Votre Restaurant. Tous droits réservés."
           />
-        </div>
-        <div>
-          <label className="admin-label">Couleur d&apos;accent des liens</label>
-          <div className="flex items-center gap-3 mt-1">
-            <input
-              type="color"
-              value={accentColor}
-              onChange={e => setAccentColor(e.target.value)}
-              className="w-10 h-10 rounded-lg border border-white/10 bg-transparent cursor-pointer"
-            />
-            <input
-              type="text"
-              value={accentColor}
-              onChange={e => setAccentColor(e.target.value)}
-              className="admin-input w-32 font-mono text-sm"
-            />
-          </div>
         </div>
       </div>
 
