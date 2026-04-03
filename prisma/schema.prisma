@@ -49,9 +49,13 @@ model SiteSettings {
   googleReviewCount   Int?    // Custom review count displayed (e.g. 450)
   googleRating        Float?  // Custom rating displayed (e.g. 4.8)
   trackingEnabled     Boolean  @default(true)
-  orderButtonEnabled  Boolean  @default(false)
-  orderButtonLabel    String   @default("Commander en ligne")
-  orderButtonUrl      String?
+  orderButtonEnabled    Boolean  @default(false)
+  orderButtonLabel      String   @default("Commander en ligne")
+  orderButtonUrl        String?
+  loginButtonEnabled    Boolean  @default(false)
+  loginButtonUrl        String   @default("https://app.woodiz14.fr/login")
+  registerButtonEnabled Boolean  @default(false)
+  registerButtonUrl     String   @default("https://app.woodiz14.fr/register")
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 

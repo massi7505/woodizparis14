@@ -19,6 +19,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       data: { ...updateData, updatedAt: new Date() },
     });
     revalidatePath('/', 'layout');
+    revalidatePath('/menu');
     revalidateTag('menu');
     return NextResponse.json(button);
   } catch (error) {
@@ -35,6 +36,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const { id } = await params;
     await prisma.linktreeButton.delete({ where: { id: parseInt(id) } });
     revalidatePath('/', 'layout');
+    revalidatePath('/menu');
     revalidateTag('menu');
     return NextResponse.json({ success: true });
   } catch (error) {

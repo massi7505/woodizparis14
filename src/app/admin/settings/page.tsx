@@ -125,6 +125,10 @@ const DEFAULT_SETTINGS = {
   orderButtonEnabled: false,
   orderButtonLabel: 'Commander en ligne',
   orderButtonUrl: '',
+  loginButtonEnabled: false,
+  loginButtonUrl: 'https://app.woodiz14.fr/login',
+  registerButtonEnabled: false,
+  registerButtonUrl: 'https://app.woodiz14.fr/register',
 };
 
 const ALL_LOCALES = [
@@ -851,6 +855,70 @@ export default function AdminSettingsPage() {
                 )}
               </div>
             )}
+          </div>
+
+          {/* Auth buttons */}
+          <div className="admin-card space-y-4">
+            <div>
+              <h3 className="font-bold text-white">🔐 Connexion / Inscription</h3>
+              <p className="text-xs text-gray-500 mt-0.5">Boutons affichés dans le header du menu</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-700">
+              {/* Login button */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold text-white">Se connecter</p>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={!!settings.loginButtonEnabled}
+                      onChange={e => set('loginButtonEnabled', e.target.checked)}
+                      className="accent-amber-500 w-4 h-4"
+                    />
+                    <span className="text-sm text-white font-medium">Activer</span>
+                  </label>
+                </div>
+                {settings.loginButtonEnabled && (
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1">URL</label>
+                    <input
+                      type="url"
+                      value={settings.loginButtonUrl || ''}
+                      onChange={e => set('loginButtonUrl', e.target.value)}
+                      className="admin-input text-sm"
+                      placeholder="https://app.woodiz14.fr/login"
+                    />
+                  </div>
+                )}
+              </div>
+              {/* Register button */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold text-white">S&apos;inscrire</p>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={!!settings.registerButtonEnabled}
+                      onChange={e => set('registerButtonEnabled', e.target.checked)}
+                      className="accent-amber-500 w-4 h-4"
+                    />
+                    <span className="text-sm text-white font-medium">Activer</span>
+                  </label>
+                </div>
+                {settings.registerButtonEnabled && (
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1">URL</label>
+                    <input
+                      type="url"
+                      value={settings.registerButtonUrl || ''}
+                      onChange={e => set('registerButtonUrl', e.target.value)}
+                      className="admin-input text-sm"
+                      placeholder="https://app.woodiz14.fr/register"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Week special section */}

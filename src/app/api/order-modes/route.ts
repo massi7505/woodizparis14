@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
       },
     });
     revalidatePath('/', 'layout');
+    revalidatePath('/menu');
     revalidateTag('menu');
     return NextResponse.json(button, { status: 201 });
   } catch (error) {

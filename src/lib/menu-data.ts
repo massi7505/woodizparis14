@@ -145,7 +145,7 @@ async function _fetchMenuSecondaryData() {
       .catch(() => []),
     p.footerSettings?.findFirst?.().catch(() => null) ?? null,
     prisma.linktreeButton
-      .findMany({ where: { section: { in: ['mode-livraison', 'mode-emporter'] } }, take: 2 })
+      .findMany({ where: { section: { in: ['mode-livraison', 'mode-emporter'] } }, orderBy: { id: 'desc' }, take: 4 })
       .catch(() => []),
   ]);
 
