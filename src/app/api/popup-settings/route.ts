@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { getSessionFromReq } from '@/lib/auth';
 
@@ -32,6 +32,7 @@ export async function PATCH(req: NextRequest) {
       create: { id: 1, ...data },
     });
     revalidatePath('/', 'layout');
+    revalidateTag('menu');
     return NextResponse.json(settings);
   } catch (e) {
     console.error('[popup-settings PATCH]', e);

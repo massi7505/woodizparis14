@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { getSessionFromReq } from '@/lib/auth';
 
@@ -19,6 +19,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       include: { translations: true },
     });
     revalidatePath('/', 'layout');
+    revalidateTag('menu');
     return NextResponse.json(faq);
   } catch {
     return NextResponse.json({ error: 'Failed to update' }, { status: 500 });
@@ -32,6 +33,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const { id } = await params;
     await prisma.fAQ.delete({ where: { id: parseInt(id) } });
     revalidatePath('/', 'layout');
+    revalidateTag('menu');
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: 'Failed to delete' }, { status: 500 });

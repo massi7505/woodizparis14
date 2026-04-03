@@ -205,10 +205,15 @@ export default function MenuClient({ categories, promos, reviews, faqs, site, lo
   }, []);
 
   const defaultCategoryId: number | null = site?.defaultCategoryId ?? categories[0]?.id ?? null;
+  const searchDebounce = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const handleSearch = useCallback((v: string) => {
-    setSearch(v);
-    // Reset active category when clearing search
-    if (!v) setActiveCategoryId(defaultCategoryId);
+    clearTimeout(searchDebounce.current);
+    if (!v) {
+      setSearch('');
+      setActiveCategoryId(defaultCategoryId);
+      return;
+    }
+    searchDebounce.current = setTimeout(() => setSearch(v), 250);
   }, [defaultCategoryId]);
 
   const headerTop = notifBarH;

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { getSessionFromReq } from '@/lib/auth';
 
@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
         create: { id: 1, ...settingsData },
       });
       revalidatePath('/', 'layout');
+      revalidateTag('menu');
       return NextResponse.json(settings);
     }
 
@@ -68,6 +69,7 @@ export async function POST(req: NextRequest) {
         include: { buttons: true },
       });
       revalidatePath('/', 'layout');
+      revalidateTag('menu');
       return NextResponse.json(slide, { status: 201 });
     }
 
@@ -75,6 +77,7 @@ export async function POST(req: NextRequest) {
       const { id: _id, bgType: _bt, ...btnData } = data;
       const button = await p3.heroSlideButton.create({ data: btnData });
       revalidatePath('/', 'layout');
+      revalidateTag('menu');
       return NextResponse.json(button, { status: 201 });
     }
 
@@ -84,6 +87,7 @@ export async function POST(req: NextRequest) {
         data: { ...cardData, settingsId: 1 },
       });
       revalidatePath('/', 'layout');
+      revalidateTag('menu');
       return NextResponse.json(card, { status: 201 });
     }
 

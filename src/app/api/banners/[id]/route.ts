@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { getSessionFromReq } from '@/lib/auth';
 
@@ -25,6 +25,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       include: { translations: true },
     });
     revalidatePath('/', 'layout');
+    revalidateTag('menu');
     return NextResponse.json(banner);
   } catch (e) {
     console.error('[banner PUT]', e);
@@ -41,6 +42,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const p = prisma as any;
     await p.notificationBanner.delete({ where: { id: parseInt(id) } });
     revalidatePath('/', 'layout');
+    revalidateTag('menu');
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error('[banner DELETE]', e);

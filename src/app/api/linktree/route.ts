@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { getSessionFromReq } from '@/lib/auth';
 
@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
         create: { id: 1, ...settingsData },
       });
       revalidatePath('/', 'layout');
+      revalidateTag('menu');
       return NextResponse.json(settings);
     }
 
@@ -60,6 +61,7 @@ export async function POST(req: NextRequest) {
     const { bgType, id: _id, createdAt: _ca, updatedAt: _ua, ...buttonData } = data;
     const button = await prisma.linktreeButton.create({ data: buttonData });
     revalidatePath('/', 'layout');
+    revalidateTag('menu');
     return NextResponse.json(button, { status: 201 });
   } catch (error) {
     console.error('[linktree POST]', error);

@@ -29,6 +29,7 @@ export async function PATCH(req: NextRequest) {
       create: { id: 1, ...data },
     });
     revalidatePath('/', 'layout');
+    revalidateTag('menu');
     revalidateTag('site-settings');
     return NextResponse.json(settings);
   } catch (error) {

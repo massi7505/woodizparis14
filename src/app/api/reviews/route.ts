@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { getSessionFromReq } from '@/lib/auth';
 
@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const review = await prisma.review.create({ data: body });
     revalidatePath('/', 'layout');
+    revalidateTag('menu');
     return NextResponse.json(review, { status: 201 });
   } catch {
     return NextResponse.json({ error: 'Failed to create review' }, { status: 500 });

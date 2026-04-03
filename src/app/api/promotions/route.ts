@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { getSessionFromReq } from '@/lib/auth';
 
@@ -89,6 +89,7 @@ export async function POST(req: NextRequest) {
       include: { translations: true },
     });
     revalidatePath('/', 'layout');
+    revalidateTag('menu');
     return NextResponse.json(promo, { status: 201 });
   } catch (e) {
     console.error('[POST /api/promotions]', e);

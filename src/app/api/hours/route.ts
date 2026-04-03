@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { getSessionFromReq } from '@/lib/auth';
 
@@ -23,10 +23,12 @@ export async function POST(req: NextRequest) {
       await prisma.openingHours.deleteMany();
       const rows = await prisma.openingHours.createMany({ data: body });
       revalidatePath('/', 'layout');
+      revalidateTag('menu');
       return NextResponse.json(rows);
     }
     const row = await prisma.openingHours.create({ data: body });
     revalidatePath('/', 'layout');
+    revalidateTag('menu');
     return NextResponse.json(row, { status: 201 });
   } catch {
     return NextResponse.json({ error: 'Failed to save hours' }, { status: 500 });

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { getSessionFromReq } from '@/lib/auth';
 
@@ -18,6 +18,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       data: { ...updateData, updatedAt: new Date() },
     });
     revalidatePath('/', 'layout');
+    revalidateTag('menu');
     return NextResponse.json(button);
   } catch (error) {
     console.error('[linktree PATCH]', error);
@@ -33,6 +34,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const { id } = await params;
     await prisma.linktreeButton.delete({ where: { id: parseInt(id) } });
     revalidatePath('/', 'layout');
+    revalidateTag('menu');
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: 'Failed to delete button' }, { status: 500 });
