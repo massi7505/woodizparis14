@@ -208,7 +208,7 @@ export default function MenuFooter({ site, locale, orderLinks = [], footerSettin
                   onChange={e => { setEmail(e.target.value); if (status === 'err') setStatus('idle'); }}
                   placeholder={L.placeholder}
                   required
-                  className="w-full px-4 py-2.5 rounded-xl text-sm text-white bg-white/8 placeholder-gray-600 focus:outline-none focus:ring-2 transition-all"
+                  className="w-full px-4 py-2.5 rounded-full text-sm text-white bg-white/8 placeholder-gray-600 focus:outline-none focus:ring-2 transition-all"
                   style={{
                     backgroundColor: 'rgba(255,255,255,0.08)',
                     border: '1px solid rgba(255,255,255,0.12)',
