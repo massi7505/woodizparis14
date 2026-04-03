@@ -77,7 +77,11 @@ export default function PromoSlider({ promos, locale, primaryColor, onActiveCoun
         const isPriority = i < 2;
 
         const displayImageUrl = tr?.imageUrl || promo.bgImageUrl;
+        const isImageBg = promo.bgType === 'image' && displayImageUrl;
         const accentColor = promo.bgColor || primaryColor;
+        const bgStyle = promo.bgType === 'gradient' && promo.bgGradient
+          ? { background: promo.bgGradient }
+          : { backgroundColor: accentColor };
 
         const discountPct =
           promoP && origP ? Math.round((1 - parseFloat(promoP) / parseFloat(origP)) * 100) : null;
@@ -95,10 +99,10 @@ export default function PromoSlider({ promos, locale, primaryColor, onActiveCoun
             className="flex-shrink-0 w-[72vw] sm:w-auto bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex flex-col"
           >
             {/* Image or color band */}
-            {displayImageUrl ? (
+            {isImageBg ? (
               <div className="relative w-full aspect-[16/9] flex-shrink-0">
                 <Image
-                  src={displayImageUrl}
+                  src={displayImageUrl!}
                   alt={tr?.title || ''}
                   fill
                   sizes="(max-width: 640px) 72vw, 320px"
@@ -118,10 +122,30 @@ export default function PromoSlider({ promos, locale, primaryColor, onActiveCoun
                 )}
               </div>
             ) : (
+              /* Color / gradient band with price */
               <div
-                className="w-full h-1.5 flex-shrink-0"
-                style={{ backgroundColor: accentColor }}
-              />
+                className="relative w-full h-24 flex-shrink-0 flex items-center justify-center overflow-hidden"
+                style={bgStyle}
+              >
+                <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }} />
+                <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full" style={{ backgroundColor: 'rgba(0,0,0,0.07)' }} />
+                {promoP && (
+                  <div className="text-center relative z-10 px-3">
+                    {origP && <p className="text-xs line-through font-semibold mb-0.5" style={{ color: 'rgba(255,255,255,0.6)' }}>{origP}€</p>}
+                    <p className="font-display text-3xl font-black leading-none" style={{ color: autoTextColor(accentColor) }}>{promoP}€</p>
+                  </div>
+                )}
+                {discountPct !== null && discountPct > 0 && (
+                  <span className="absolute top-2 left-2 text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500 text-white shadow-sm">
+                    -{discountPct}%
+                  </span>
+                )}
+                {showExpiry && (
+                  <span className="absolute top-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-500 text-white">
+                    {expiryFn(days!)}
+                  </span>
+                )}
+              </div>
             )}
 
             {/* Content */}
@@ -143,12 +167,12 @@ export default function PromoSlider({ promos, locale, primaryColor, onActiveCoun
                     Offre
                   </span>
                 )}
-                {!displayImageUrl && showExpiry && (
+                {isImageBg && showExpiry && (
                   <span className="text-[10px] font-semibold text-red-500 flex-shrink-0">
                     {expiryFn(days!)}
                   </span>
                 )}
-                {!displayImageUrl && discountPct !== null && discountPct > 0 && (
+                {isImageBg && discountPct !== null && discountPct > 0 && (
                   <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500 text-white">
                     -{discountPct}%
                   </span>
