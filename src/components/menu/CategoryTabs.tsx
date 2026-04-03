@@ -50,7 +50,7 @@ export default function CategoryTabs({ categories, active, onSelect, locale, pri
             >
               {/* Image — rounded-2xl, no ring; active = scale up + colored glow */}
               <div
-                className="relative w-14 h-14 rounded-2xl overflow-hidden transition-all duration-250"
+                className="relative w-14 h-14 rounded-2xl overflow-hidden transition-all duration-250 hidden sm:block"
                 style={{
                   transform: isActive ? 'scale(1.08)' : 'scale(1)',
                   boxShadow: isActive
