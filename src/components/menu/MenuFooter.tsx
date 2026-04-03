@@ -6,7 +6,7 @@ import Image from 'next/image';
 interface OrderLink { label: string; url: string; }
 interface FooterLink { label: string; url: string; }
 interface FooterCol  { title: string; items: FooterLink[] }
-interface Props { site: any; locale: string; orderLinks?: OrderLink[]; footerSettings?: any; }
+interface Props { site: any; locale: string; orderLinks?: OrderLink[]; emporterLinks?: OrderLink[]; livraisonLinks?: OrderLink[]; footerSettings?: any; }
 
 function parseCol(raw: string | null | undefined, fallback: FooterCol): FooterCol {
   try { return raw ? JSON.parse(raw) : fallback; } catch { return fallback; }
@@ -44,7 +44,7 @@ function footerBg(hex: string): string {
   return lum > 0.4 ? '#0f172a' : darken(hex, 0.15);
 }
 
-export default function MenuFooter({ site, locale, orderLinks = [], footerSettings }: Props) {
+export default function MenuFooter({ site, locale, orderLinks = [], emporterLinks = [], livraisonLinks = [], footerSettings }: Props) {
   const L = FOOTER_COLS[locale] || FOOTER_COLS.fr;
   const name = site?.siteName || 'Woodiz';
   const year = new Date().getFullYear();
@@ -63,7 +63,14 @@ export default function MenuFooter({ site, locale, orderLinks = [], footerSettin
     ],
   });
   const col2Raw = parseCol(footerSettings?.col2Json, { title: L.order, items: [] });
-  const col2 = { ...col2Raw, title: col2Raw.title || L.order };
+  // Fallback chain: col2Json items → emporterLinks + livraisonLinks → orderLinks
+  const allOrderLinks = [...emporterLinks, ...livraisonLinks].filter(l => l.url);
+  const col2FallbackItems = allOrderLinks.length > 0 ? allOrderLinks : orderLinks;
+  const col2 = {
+    ...col2Raw,
+    title: col2Raw.title || L.order,
+    items: col2Raw.items.length > 0 ? col2Raw.items : col2FallbackItems.map(l => ({ label: l.label, url: l.url })),
+  };
   const col3 = parseCol(footerSettings?.col3Json, { title: '', items: [] });
   const copyright = (footerSettings?.copyright || `© ${year} ${name}. Tous droits réservés.`)
     .replace('{year}', String(year))

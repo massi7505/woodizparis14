@@ -455,7 +455,7 @@ export default function MenuClient({ categories, promos, reviews, faqs, site, lo
       </main>
 
       {/* ===== FOOTER ===== */}
-      <MenuFooter site={site} locale={locale} orderLinks={orderLinks} footerSettings={footerSettings} />
+      <MenuFooter site={site} locale={locale} orderLinks={orderLinks} emporterLinks={emporterLinks} livraisonLinks={livraisonLinks} footerSettings={footerSettings} />
 
       {/* ===== LEADS POPUP ===== */}
       {popupSettings?.enabled && (

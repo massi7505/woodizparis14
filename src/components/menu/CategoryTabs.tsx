@@ -2,7 +2,7 @@
 
 import { useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { darkenToContrast } from '@/lib/color';
+import { darkenToContrast, autoTextColor } from '@/lib/color';
 
 interface Category {
   id: number;
@@ -48,9 +48,9 @@ export default function CategoryTabs({ categories, active, onSelect, locale, pri
               }}
               className="flex flex-col items-center gap-1 flex-shrink-0 group"
             >
-              {/* Image — rounded-2xl, no ring; active = scale up + colored glow */}
+              {/* Image — visible on all screens, smaller on mobile */}
               <div
-                className="relative w-14 h-14 rounded-2xl overflow-hidden transition-all duration-250 hidden sm:block"
+                className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-250"
                 style={{
                   transform: isActive ? 'scale(1.08)' : 'scale(1)',
                   boxShadow: isActive
@@ -64,11 +64,11 @@ export default function CategoryTabs({ categories, active, onSelect, locale, pri
                     alt=""
                     aria-hidden="true"
                     fill
-                    sizes="56px"
+                    sizes="(max-width: 640px) 48px, 56px"
                     className="object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gray-100 flex items-center justify-center text-2xl">
+                  <div className="w-full h-full bg-gray-100 flex items-center justify-center text-xl sm:text-2xl">
                     {cat.iconEmoji || '🍽️'}
                   </div>
                 )}
@@ -115,7 +115,7 @@ export default function CategoryTabs({ categories, active, onSelect, locale, pri
             if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }}
           className={`category-pill flex-shrink-0 ${active === cat.id ? 'active' : 'inactive'}`}
-          style={active === cat.id ? { backgroundColor: primaryColor, borderColor: primaryColor, color: '#111' } : {}}
+          style={active === cat.id ? { backgroundColor: primaryColor, borderColor: primaryColor, color: autoTextColor(primaryColor) } : {}}
         >
           {cat.iconEmoji && <span className="flex-shrink-0">{cat.iconEmoji}</span>}
           {cat.translations[0]?.name || '—'}
