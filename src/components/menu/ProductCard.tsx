@@ -137,10 +137,10 @@ export default function ProductCard({ product, locale, onClick, compact = false,
       </div>
 
       {/* Content */}
-      <div className="p-3 flex-1 flex flex-col justify-between">
-        <h3 className="font-bold text-gray-900 text-sm leading-tight line-clamp-1">{t?.name}</h3>
+      <div className="p-2.5 flex-1 flex flex-col justify-between">
+        <h3 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-1">{t?.name}</h3>
         {t?.description && (
-          <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-snug">{t.description}</p>
+          <p className="text-xs text-gray-500 mt-0.5 leading-snug line-clamp-2 hidden sm:block">{t.description}</p>
         )}
 
 
@@ -151,7 +151,7 @@ export default function ProductCard({ product, locale, onClick, compact = false,
               {parseFloat(product.comparePrice).toFixed(2)}€
             </span>
           )}
-          <span className="text-base font-black" style={{ color: darkenToContrast(primaryColor) }}>
+          <span className="text-sm font-bold" style={{ color: darkenToContrast(primaryColor) }}>
             {parseFloat(product.price).toFixed(2)}€
           </span>
         </div>
