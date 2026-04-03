@@ -49,8 +49,8 @@ interface Props {
   banners?: NotificationBannerData[];
   openingHours?: OpeningHoursData[];
   orderLinks?: { label: string; url: string }[];
-  emporterLinks?: { label: string; url: string; icon?: string | null }[];
-  livraisonLinks?: { label: string; url: string; icon?: string | null }[];
+  emporterLinks?: { label: string; url: string; icon?: string | null; iconUrl?: string | null; bgColor?: string | null; textColor?: string | null }[];
+  livraisonLinks?: { label: string; url: string; icon?: string | null; iconUrl?: string | null; bgColor?: string | null; textColor?: string | null }[];
   livraisonModeIconUrl?: string | null;
   emporterModeIconUrl?: string | null;
   footerSettings?: any;

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { autoTextColor } from '@/lib/color';
 
 interface OrderLink {
   label: string;
@@ -110,8 +111,9 @@ export function OrderModeBarMobile({
   livraisonModeIconUrl, emporterModeIconUrl,
 }: Props) {
   const L = LABELS[locale] || LABELS.fr;
-  const livraisonColor = '#111827';
-  const emporterColor = '#111827';
+  // DESIGN IMPROVEMENT: use primaryColor instead of hardcoded black
+  const livraisonColor = primaryColor;
+  const emporterColor = primaryColor;
 
   const livraison = useModeDropdown(livraisonLinks);
   const emporter  = useModeDropdown(emporterLinks);
@@ -154,7 +156,7 @@ export function OrderModeBarMobile({
           className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl font-bold text-sm tracking-wide transition-all duration-200 active:scale-95 select-none"
           style={{
             background: `linear-gradient(135deg, ${livraisonColor}, ${livraisonColor}cc)`,
-            color: '#fff',
+            color: autoTextColor(livraisonColor),
             boxShadow: livraison.open ? `0 4px 16px ${livraisonColor}55` : `0 2px 8px ${livraisonColor}33`,
           }}
         >
@@ -184,7 +186,7 @@ export function OrderModeBarMobile({
           className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl font-bold text-sm tracking-wide transition-all duration-200 active:scale-95 select-none"
           style={{
             background: `linear-gradient(135deg, ${emporterColor}, ${emporterColor}cc)`,
-            color: '#fff',
+            color: autoTextColor(emporterColor),
             boxShadow: emporter.open ? `0 4px 16px ${emporterColor}55` : `0 2px 8px ${emporterColor}33`,
           }}
         >
@@ -236,8 +238,9 @@ export function OrderModeBarDesktop({
   livraisonModeIconUrl, emporterModeIconUrl,
 }: Props) {
   const L = LABELS[locale] || LABELS.fr;
-  const livraisonColor = '#111827';
-  const emporterColor = '#111827';
+  // DESIGN IMPROVEMENT: use primaryColor instead of hardcoded black
+  const livraisonColor = primaryColor;
+  const emporterColor = primaryColor;
 
   const livraison = useModeDropdown(livraisonLinks);
   const emporter  = useModeDropdown(emporterLinks);
@@ -272,7 +275,7 @@ export function OrderModeBarDesktop({
         <button
           onClick={e => { emporter.setOpen(false); livraison.handleClick(e); }}
           className="flex items-center gap-1.5 px-3 text-xs font-bold tracking-wide transition-all hover:brightness-110 active:brightness-90 select-none whitespace-nowrap"
-          style={{ background: `linear-gradient(135deg, ${livraisonColor}, ${livraisonColor}dd)`, color: '#fff' }}
+          style={{ background: `linear-gradient(135deg, ${livraisonColor}, ${livraisonColor}dd)`, color: autoTextColor(livraisonColor) }}
         >
           {livraisonModeIconUrl
             // eslint-disable-next-line @next/next/no-img-element
@@ -297,7 +300,7 @@ export function OrderModeBarDesktop({
         <button
           onClick={e => { livraison.setOpen(false); emporter.handleClick(e); }}
           className="flex items-center gap-1.5 px-3 text-xs font-bold tracking-wide transition-all hover:brightness-110 active:brightness-90 select-none whitespace-nowrap"
-          style={{ background: `linear-gradient(135deg, ${emporterColor}, ${emporterColor}dd)`, color: '#fff' }}
+          style={{ background: `linear-gradient(135deg, ${emporterColor}, ${emporterColor}dd)`, color: autoTextColor(emporterColor) }}
         >
           {emporterModeIconUrl
             // eslint-disable-next-line @next/next/no-img-element

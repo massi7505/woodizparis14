@@ -149,7 +149,8 @@ async function _fetchMenuSecondaryData() {
       .catch(() => []),
   ]);
 
-  const toLink = (b: any) => ({ label: b.label, url: b.url, icon: b.icon ?? null });
+  // fix: include iconUrl, bgColor, textColor so admin customizations are passed through
+  const toLink = (b: any) => ({ label: b.label, url: b.url, icon: b.icon ?? null, iconUrl: b.iconUrl ?? null, bgColor: b.bgColor ?? null, textColor: b.textColor ?? null });
 
   return {
     banners: (bannersRaw ?? []) as any[],
