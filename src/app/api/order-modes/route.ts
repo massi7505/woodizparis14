@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { getSessionFromReq } from '@/lib/auth';
 
@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
       },
     });
     revalidatePath('/', 'layout');
+    revalidateTag('menu');
     return NextResponse.json(button, { status: 201 });
   } catch (error) {
     console.error('[order-modes POST]', error);
