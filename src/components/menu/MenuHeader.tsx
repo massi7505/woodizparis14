@@ -30,8 +30,8 @@ export default function MenuHeader({ site, locale, search, onSearch, L, primaryC
   const orderLabel = site?.orderButtonLabel || 'Commander';
   const orderUrl = site?.orderButtonUrl || '#';
 
+  // DESIGN IMPROVEMENT: glassmorphism léger, cohérent avec les tabs sticky
   return (
-    // DESIGN IMPROVEMENT: glassmorphism léger, cohérent avec les tabs sticky
     <header className="bg-white/90 backdrop-blur-md border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
         {/* Logo */}

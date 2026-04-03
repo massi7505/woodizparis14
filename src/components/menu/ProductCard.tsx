@@ -143,7 +143,6 @@ export default function ProductCard({ product, locale, onClick, compact = false,
           <p className="text-xs text-gray-500 mt-0.5 leading-snug line-clamp-2 hidden sm:block">{t.description}</p>
         )}
 
-
         {/* Price */}
         <div className="flex items-baseline gap-1.5 mt-2">
           {product.comparePrice && (
