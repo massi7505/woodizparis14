@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface Props {
   locale: string;
@@ -9,21 +10,46 @@ interface Props {
 
 export default function LanguageSwitcher({ locale, options }: Props) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top: number; right: number } | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (wrapRef.current?.contains(e.target as Node)) return;
+      if (menuRef.current?.contains(e.target as Node)) return;
+      setOpen(false);
     }
     document.addEventListener('mousedown', onClickOutside);
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
+  useLayoutEffect(() => {
+    if (!open || !btnRef.current) return;
+    const updatePos = () => {
+      if (!btnRef.current) return;
+      const r = btnRef.current.getBoundingClientRect();
+      setPos({ top: r.bottom + 6, right: window.innerWidth - r.right });
+    };
+    updatePos();
+    window.addEventListener('resize', updatePos);
+    window.addEventListener('scroll', updatePos, true);
+    return () => {
+      window.removeEventListener('resize', updatePos);
+      window.removeEventListener('scroll', updatePos, true);
+    };
+  }, [open]);
+
   const others = options.filter(o => o.code !== locale);
 
   return (
-    <div ref={ref} className="relative flex-shrink-0">
+    <div ref={wrapRef} className="relative flex-shrink-0">
       <button
+        ref={btnRef}
         onClick={() => setOpen(v => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -38,10 +64,12 @@ export default function LanguageSwitcher({ locale, options }: Props) {
         </svg>
       </button>
 
-      {open && others.length > 0 && (
+      {mounted && open && others.length > 0 && pos && createPortal(
         <div
+          ref={menuRef}
           role="listbox"
-          className="absolute right-0 top-full mt-1.5 bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden z-50 min-w-[56px]"
+          style={{ position: 'fixed', top: pos.top, right: pos.right, zIndex: 2147483647 }}
+          className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden min-w-[56px]"
         >
           {others.map(({ code, href }) => (
             <a
@@ -54,7 +82,8 @@ export default function LanguageSwitcher({ locale, options }: Props) {
               {code.toUpperCase()}
             </a>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

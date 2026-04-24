@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { autoTextColor } from '@/lib/color';
+import { autoTextColor, darkenToContrast } from '@/lib/color';
 
 interface Props {
   promos: any[];
@@ -79,6 +79,7 @@ export default function PromoSlider({ promos, locale, primaryColor, onActiveCoun
         const displayImageUrl = tr?.imageUrl || promo.bgImageUrl;
         const isImageBg = promo.bgType === 'image' && displayImageUrl;
         const accentColor = promo.bgColor || primaryColor;
+        const accentOnWhite = darkenToContrast(accentColor, '#FFFFFF');
         const bgStyle = promo.bgType === 'gradient' && promo.bgGradient
           ? { background: promo.bgGradient }
           : { backgroundColor: accentColor };
@@ -155,14 +156,14 @@ export default function PromoSlider({ promos, locale, primaryColor, onActiveCoun
                 {badgeText ? (
                   <span
                     className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                    style={{ backgroundColor: `${accentColor}18`, color: accentColor }}
+                    style={{ backgroundColor: `${accentOnWhite}18`, color: accentOnWhite }}
                   >
                     {badgeText}
                   </span>
                 ) : (
                   <span
                     className="text-[10px] font-bold uppercase tracking-wider"
-                    style={{ color: `${primaryColor}80` }}
+                    style={{ color: `${darkenToContrast(primaryColor, '#FFFFFF')}b0` }}
                   >
                     Offre
                   </span>
@@ -199,7 +200,7 @@ export default function PromoSlider({ promos, locale, primaryColor, onActiveCoun
                   <div className="flex items-baseline gap-1.5">
                     {origP && <span className="text-xs text-gray-400 line-through">{origP}€</span>}
                     {promoP && (
-                      <span className="text-base font-black" style={{ color: accentColor }}>
+                      <span className="text-base font-black" style={{ color: accentOnWhite }}>
                         {promoP}€
                       </span>
                     )}
